@@ -27,6 +27,15 @@ Obiekty graficzne objęte rejestrowaniem:
 - button z opcją checkable, działanie jak bi-stabilny
 - line edit
 - k-led (kde led)
+
+Proces ładowania plików ui:
+Przeszukuje wszystkie obiekty graficzne, w celu odnalezienia zawartości pola What's this.
+Jeżeli w what's this, mamy: 
+* 'M10.1' - oznacza 1-szy bit markera 10.
+* 'MW20,WORD' - oznacza słowo, adres 20.
+* 'MD20,DINT' - oznacza podwójny integer(4bajty), adres 20
+* 'MD20,REAL' - oznacza liczbę zmiennoprzecinkową (4bajty), adres 20
+Znalezione pola wpisujemy do listy/słownika/zbioru
 """
 """
 Klasa owijająca ibhlinkdriver w obiekt typu QObject który można przenieść do wątku i korzystać
@@ -48,8 +57,6 @@ class Worker(QObject):
         :param data_number: int - number of data
         :param db_number: int - in case of type 'D' number of DB block
         :param size: int - number of bytes to read beginning from target 'data_number'
-        ???????????:rtype: list of int - as list of bytes
-
         """
         if not self.driver.connected:
             self.driver.connect_plc()
@@ -69,3 +76,4 @@ class Worker(QObject):
     read_bytes_signal = pyqtSignal(list)
     # TODO: sygnał błędu operacji
     endSlot = pyqtSignal()
+
