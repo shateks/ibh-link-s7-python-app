@@ -37,8 +37,8 @@ class ibhlinkdriver:
             return
 
         msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
-                                  ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_DISCONNECT,
-                                  device_adr=self.mpi_address)
+                                     ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_DISCONNECT,
+                                     device_adr=self.mpi_address)
         self.msg_number += 1
 
         msg_length = IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE
@@ -58,8 +58,8 @@ class ibhlinkdriver:
 
     def plc_get_run(self):
         msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
-                                  ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_GET_OP_STATUS,
-                                  device_adr=self.mpi_address)
+                                     ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_GET_OP_STATUS,
+                                     device_adr=self.mpi_address)
         self.msg_number += 1
 
         self.sendData(bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE])
@@ -88,16 +88,16 @@ class ibhlinkdriver:
             return None
         elif data_type == 'E' or data_type == 'I':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.INPUT_AREA, data_adr=data_number,
-                                      data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+                                         data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'A' or data_type == 'O':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.OUTPUT_AREA,
-                                      data_adr=data_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+                                         data_adr=data_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'M':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_M, data_area=IBHconst.INPUT_AREA, data_adr=data_number,
-                                      data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+                                         data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'D':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_DB, data_area=data_number >> 8, data_idx=data_number,
-                                      data_adr=db_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+                                         data_adr=db_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif size > IBHconst.IBHLINK_READ_MAX / 2:
             print("size > IBHconst.IBHLINK_READ_MAX/2")
             return None
@@ -202,8 +202,8 @@ class ibhlinkdriver:
         bytes_count = self._socket.send(raw_bytes)
         if bytes_count != len(raw_bytes):
             raise ToShortSendReceiveTelegramError(
-                    'Sent telegram is too short is {}, expected {}'.format(bytes_count, len(raw_bytes))
-                )
+                'Sent telegram is too short is {}, expected {}'.format(bytes_count, len(raw_bytes))
+            )
         return bytes_count
 
     def receiveData(self):
@@ -211,9 +211,9 @@ class ibhlinkdriver:
 
         if len(raw_bytes) < IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE:
             raise ToShortSendReceiveTelegramError(
-                    'Received telegram is too short is {}, expected {}'.format(len(raw_bytes),
-                    IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE)
-                )
+                'Received telegram is too short is {}, expected {}'.format(len(raw_bytes),
+                                                                           IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE)
+            )
 
         return raw_bytes
 
@@ -265,6 +265,7 @@ class ibhlinkdriver:
     def SetMB(self, Nr, val):
         self.write_vals('M', Nr, 0, 1, val)
 
+    # TODO: Sprawdź metody czy nie trzeba ustawić byteorder
     def SetMW(self, Nr, val):
         self.write_vals('M', Nr, 0, 2, val)
 

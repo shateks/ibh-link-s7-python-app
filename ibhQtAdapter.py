@@ -1,5 +1,6 @@
 from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal
 import time
+import string
 import threading
 import ibhlinkdriver
 import IBHconst
@@ -37,19 +38,47 @@ Jeżeli w what's this, mamy:
 * 'MD20,REAL' - oznacza liczbę zmiennoprzecinkową (4bajty), adres 20
 Znalezione pola wpisujemy do listy/słownika/zbioru
 """
-"""
-Klasa owijająca ibhlinkdriver w obiekt typu QObject który można przenieść do wątku i korzystać
-z dobrodziejstwa sygnałów i slotów Qt.
-Metody posiadają praktycznie te same argumenty.
-"""
+
+
+class Manager(QObject):
+    """
+
+    """
+
+    def __init__(self):
+        """
+
+        """
+        self._grouped_read_out_list
+        pass
+
+    def add_subscriber(self, data, type, obj_refernce):
+        """
+        Adding subscriber for plc data readout.
+
+        :param data: string - data area, address. E.g. M1.2, MW10, DB10.DBX2
+        :param type: string - BOOL,BYTE,WORD,INT,DWORD,DINT,REAL
+        :param obj_refernce: QObject - Reference for QObject
+        :return:
+        """
+
+        # TODO: parser, własny generator z "yeld" który dzieli "MB10","db10.dbb0" na listę\
+        # moment przejścia między litera/cyfra kolejny punkt podziału
+        data.capitalize()
+        type.capitalize()
+        pass
 
 class Worker(QObject):
+    """
+    Klasa owijająca ibhlinkdriver w obiekt typu QObject który można przenieść do wątku i korzystać
+    z dobrodziejstwa sygnałów i slotów Qt.
+    Metody posiadają praktycznie te same argumenty.
+    """
     def __init__(self, ip_address, mpi_address):
         super().__init__()
         self.driver = ibhlinkdriver.ibhlinkdriver(ip_address, IBHconst.IBHLINK_PORT, mpi_address)
 
-    # slot do odczytu list<int> dowolnej długości
-    # parametry:
+
     @pyqtSlot(str, int, int, int)
     def read_bytes(self, data_type, data_number, db_number, size):
         """
@@ -66,6 +95,7 @@ class Worker(QObject):
         self.driver.disconnect_plc()
         # self.read_bytes_signal.emit([1,2,3,4,5,6,7,8])
 
+
     # TODO: slot do zapisu list<int> dowolnej długości
 
     # TODO: slot do odczytu dowolnego bitu
@@ -77,3 +107,18 @@ class Worker(QObject):
     # TODO: sygnał błędu operacji
     endSlot = pyqtSignal()
 
+
+def _parser(data):
+    _str = data.strip()
+    for index, char in enumerate(_str):
+        if index in range() in string.ascii_letters and _str[-1] in string.digits:
+
+    if val[0] in []
+    for char in val:
+        yield char
+
+
+st = ' Mb90.1 '
+
+for s in _parser(st):
+    print(s)

@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget
 from ui_gui import *
-from ibhWorker import *
+from ibhQtAdapter import *
 from PyQt5.QtCore import QThread
 
 def killnij():
