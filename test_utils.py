@@ -36,7 +36,7 @@ parser_set_of_data = [
     (('AW123'),         ('Q', None, 123, None, 'WORD')),
     (('qW123 word'),    ('Q', None, 123, None, 'WORD')),
     (('AW123 word'),    ('Q', None, 123, None, 'WORD')),
-    (('aW123 qnt'),     ('Q', None, 123, None, 'INT')),
+    (('aW123 int'),     ('Q', None, 123, None, 'INT')),
 
     (('db300.dbx10.2'),         ('D', 300, 10, 2, 'BOOL')),
     (('db300.dbx10.2 bool'),    ('D', 300, 10, 2, 'BOOL')),
@@ -59,6 +59,6 @@ class TestPaserVariablePlc(unittest.TestCase):
         self.t_parser = utils.PlcVariableParser()
 
     @idata(parser_set_of_data)
-    def testParse_simple(self, tuptup):
+    def testParse(self, tuptup):
         _text = tuptup[0]
-        self.assertEqual(tuptup[1], self.t_parser.parse_simple(_text))
+        self.assertEqual(tuptup[1], self.t_parser.parse(_text))
