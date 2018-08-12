@@ -52,6 +52,13 @@ parser_set_of_data = [
     (('db300.dbd10 real'),      ('D', 300, 10, None, 'REAL')),
     ]
 
+parser_set_of_data_should_fail = [
+    'm200', 'MD30.2', 'i22', 'q3',
+    'db20dbx12.2', 'd2.dbx3.2', 'db3,dbx40.2', 'db2.dbx3,2',
+    'm23.8', 'db2.dbx23.8',
+    'mw30real', 'db1.dbb3 dword', 'db1.dbb3 int'
+    ]
+
 @ddt
 class TestPaserVariablePlc(unittest.TestCase):
 
@@ -62,3 +69,9 @@ class TestPaserVariablePlc(unittest.TestCase):
     def testParse(self, tuptup):
         _text = tuptup[0]
         self.assertEqual(tuptup[1], self.t_parser.parse(_text))
+
+    @idata(parser_set_of_data_should_fail)
+    def testParseFail(self,val):
+        self.assertRaises(ValueError, self.t_parser.parse, val)
+        # with self.assertRaises(ValueError):
+        #     self.t_parser.parse(val)

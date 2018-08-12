@@ -1,12 +1,19 @@
 import configparser
 import re
+from PyQt5.QtWidgets import QWidget
 
+SUPPORTED_WIDGETS = ['QRadioButton','QPushButton','QLabel','QLineEdit','QCheckBox']
+
+def find_supported_widgets(widget):
+    w_list = widget.findChildren(QWidget)
+    for w in w_list:
+        if w.metaObject().className() in SUPPORTED_WIDGETS:
+            yield w
 
 class PlcVariableParser:
     """
     Class for parsing strings provided by 'What's this' property
     """
-    # TODO: Dodaj do wyszukiwania jeszcze reprezentację zmiennych: BYTE/SINT, WORD/INT, DWORD/DINT/REAL
     def __init__(self):
         _data_area_finder_expresion = r"^([A-Z]{1,3})([\d]{1,4})"
         _bit_type_address_expresion = r"(?<=\.)[0-7]"
@@ -23,17 +30,18 @@ class PlcVariableParser:
         self.bit_nr = None
         self.data_type = None
 
-    def parse(self, val):
+    def parse(self, str_val):
         """
         Method for parsing strings, for instance: 'db100.dbx10.2' to tuple ('D',100,10,2,'BOOL')
         :param val:
         :return: tuple(area,db_number,address,bit_nr,data_type)
         """
+        val = str_val
         val = val.strip().upper()
         val = val.replace(" ", "")
         data_area_match = self._data_area_re.match(val)
         if data_area_match is None:
-            return None
+            raise ValueError('No valid S7 address:{}'.format(str_val))
 
         self.area = data_area_match.group(1)
 
@@ -41,6 +49,8 @@ class PlcVariableParser:
             self.address = int(data_area_match.group(2))
             val = val[data_area_match.end(0):]
             bit_match = self._bit_type_address_re.search(val)
+            if bit_match is None:
+                raise ValueError('No valid S7 address:{}'.format(str_val))
             self.bit_nr = int(bit_match.group(0))
             self.data_type = 'BOOL'
 
@@ -49,16 +59,31 @@ class PlcVariableParser:
             self.address = int(data_area_match.group(2))
             val = val[data_area_match.end(0):]
             data_type_match = self._data_type_re.match(val)
+
+            char = self.area[1]
+
+            if char == 'B':
+                implicit_data_type = 'BYTE'
+            elif char == 'W':
+                implicit_data_type = 'WORD'
+            elif char == 'D':
+                implicit_data_type = 'DWORD'
+
             if data_type_match is None:
-                char = self.area[1]
-                if char == 'B':
-                    self.data_type = 'BYTE'
-                elif char == 'W':
-                    self.data_type = 'WORD'
-                elif char == 'D':
-                    self.data_type = 'DWORD'
+                if len(val) > 0:
+                    raise ValueError('No valid S7 address:{}'.format(str_val))
+                self.data_type = implicit_data_type
             else:
                 self.data_type = data_type_match.group(0)
+                if self.data_type in ['BYTE', 'SINT'] and implicit_data_type == 'BYTE':
+                    pass
+                elif self.data_type in ['WORD', 'INT'] and implicit_data_type == 'WORD':
+                    pass
+                elif self.data_type in ['DWORD', 'DINT', 'REAL'] and implicit_data_type == 'DWORD':
+                    pass
+                else:
+                    raise ValueError('No valid S7 address:{}'.format(str_val))
+
             self.area = self.area[0]
 
         elif self.area == 'DB':
@@ -66,31 +91,46 @@ class PlcVariableParser:
             self.db_nr = int(data_area_match.group(2))
             val = val[data_area_match.end(0):]
             data_block_address_match = self._data_block_address_re.search(val)
-            if data_block_address_match is not None:
-                char = data_block_address_match.group(1)[2]
-                if char == 'X':
-                    self.address = int(data_block_address_match.group(2))
-                    val = val[data_area_match.end(2):]
-                    bit_match = self._bit_type_address_re.search(val)
-                    self.bit_nr = int(bit_match.group(0))
-                    self.data_type = 'BOOL'
-                else:
-                    self.address = int(data_block_address_match.group(2))
-                    val = val[data_block_address_match.end(0):]
-                    data_type_match = self._data_type_re.match(val)
-                    if data_type_match is None:
-                        if char == 'B':
-                            self.data_type = 'BYTE'
-                        elif char == 'W':
-                            self.data_type = 'WORD'
-                        elif char == 'D':
-                            self.data_type = 'DWORD'
-                    else:
-                        self.data_type = data_type_match.group(0)
+            if data_block_address_match is None:
+                raise ValueError('No valid S7 address:{}'.format(str_val))
 
+            char = data_block_address_match.group(1)[2]
+
+            if char == 'X':
+                self.address = int(data_block_address_match.group(2))
+                val = val[data_area_match.end(2):]
+                bit_match = self._bit_type_address_re.search(val)
+                if bit_match is None:
+                    raise ValueError('No valid S7 address:{}'.format(str_val))
+                self.bit_nr = int(bit_match.group(0))
+                self.data_type = 'BOOL'
+            else:
+                self.address = int(data_block_address_match.group(2))
+                val = val[data_block_address_match.end(0):]
+                data_type_match = self._data_type_re.match(val)
+
+                if char == 'B':
+                    implicit_data_type = 'BYTE'
+                elif char == 'W':
+                    implicit_data_type = 'WORD'
+                elif char == 'D':
+                    implicit_data_type = 'DWORD'
+
+                if data_type_match is None:
+                    self.data_type = implicit_data_type
+                else:
+                    self.data_type = data_type_match.group(0)
+                    if self.data_type in ['BYTE', 'SINT'] and implicit_data_type == 'BYTE':
+                        pass
+                    elif self.data_type in ['WORD', 'INT'] and implicit_data_type == 'WORD':
+                        pass
+                    elif self.data_type in ['DWORD', 'DINT', 'REAL'] and implicit_data_type == 'DWORD':
+                        pass
+                    else:
+                        raise ValueError('No valid S7 address:{}'.format(str_val))
 
         else:
-            return None
+            raise ValueError('No valid S7 address:{}'.format(str_val))
 
         # Replacing German notation:
         if self.area == 'E':
