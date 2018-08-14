@@ -1,9 +1,11 @@
 from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal
+from PyQt5.QtWidgets import QLabel, QPushButton
 import time
 import string
 import threading
 import ibhlinkdriver
 import IBHconst
+from data_plc import BaseData
 
 """
 Wymagania:
@@ -27,7 +29,6 @@ Obiekty graficzne objęte rejestrowaniem:
 - button, działanie jak mono-stabilny
 - button z opcją checkable, działanie jak bi-stabilny
 - line edit
-- k-led (kde led)
 
 Proces ładowania plików ui:
 Przeszukuje wszystkie obiekty graficzne, w celu odnalezienia zawartości pola What's this.
@@ -42,37 +43,77 @@ Znalezione pola wpisujemy do listy/słownika/zbioru
 
 class Manager(QObject):
     """
-
+    The managing class for Worker.
+    Is responsive for:
+    * invoking cyclically read of memory areas
+    * sending results of reads to subscribers
+    * same operations above for writes
     """
 
     def __init__(self):
         """
 
         """
-        self._grouped_read_out_list
+        self.visu_variable_list = []
+        self.visu_variable = dict()
+        self.bytes_for_readout = dict()
+
+        # self._grouped_read_out_list
         pass
 
-    def add_subscriber(self, data, type, obj_refernce):
+    @staticmethod
+    def divide_lists_of_address(input_list, chunk_size):
+        """
+        Method divides list for bytes readout, list after processing should be optimized
+        to minimize count of readout.
+        :param input_list: list - with no duplicates unsorted or sorted
+        :param chunk_size: int - size of byte block
+        :return: list of lists - divided list
+        """
+        _list = sorted(input_list)
+        _result = []
+        _partial_result = []
+
+        _div_point = _list[0] + chunk_size - 1
+        _prev_element = _list[0]
+        _div_begin = _list[0]
+
+        for element in _list:
+            if element > _div_point:
+                _partial_result = [x for x in range(_div_begin, _prev_element + 1)]
+                _div_point = element + chunk_size
+                _result.append(_partial_result)
+                _div_begin = element
+            _prev_element = element
+
+        _partial_result = [x for x in range(_div_begin, _prev_element + 1)]
+        _result.append(_partial_result)
+
+        return _result
+
+    def add_subscriber(self, data_description, q_obj_refernce):
         """
         Adding subscriber for plc data readout.
 
-        :param data: string - data area, address. E.g. M1.2, MW10, DB10.DBX2
-        :param type: string - BOOL,BYTE,WORD,INT,DWORD,DINT,REAL
-        :param obj_refernce: QObject - Reference for QObject
+        :param data_description: tuple(area:string,db_number:int,address:int,bit_nr:int,data_type:string)
+        :param q_obj_refernce: QObject - Reference for QObject
         :return:
         """
 
-        # TODO: parser, własny generator z "yeld" który dzieli "MB10","db10.dbb0" na listę\
-        # moment przejścia między litera/cyfra kolejny punkt podziału
-        data.capitalize()
-        type.capitalize()
+        if isinstance(q_obj_refernce, QLabel):
+            data = BaseData(*data_description)
+
+            slot = q_obj_refernce.setText
+
+        elif isinstance(q_obj_refernce, QPushButton):
+            pass
         pass
 
 class Worker(QObject):
     """
-    Klasa owijająca ibhlinkdriver w obiekt typu QObject który można przenieść do wątku i korzystać
-    z dobrodziejstwa sygnałów i slotów Qt.
-    Metody posiadają praktycznie te same argumenty.
+    The class wrapping ibhlinkdriver in a QObject type object that can be moved to a thread and used
+    from the benefits of Qt signals and slots.
+    The methods have practically the same arguments.
     """
     def __init__(self, ip_address, mpi_address):
         super().__init__()
@@ -106,19 +147,3 @@ class Worker(QObject):
     read_bytes_signal = pyqtSignal(list)
     # TODO: sygnał błędu operacji
     endSlot = pyqtSignal()
-
-
-def _parser(data):
-    _str = data.strip()
-    for index, char in enumerate(_str):
-        if index in range() in string.ascii_letters and _str[-1] in string.digits:
-
-    if val[0] in []
-    for char in val:
-        yield char
-
-
-st = ' Mb90.1 '
-
-for s in _parser(st):
-    print(s)
