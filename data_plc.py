@@ -76,6 +76,10 @@ def _to_plc_real_(val):
     return struct.pack(">f", val)
 
 class BaseData:
+    """
+    Helper class for converting variables between PLC and PC, byteorder and data types.
+
+    """
     def __init__(self, area, db_number, address, bit_nr, data_type):
         self._area=area
         self._db_number=db_number
@@ -117,6 +121,14 @@ class BaseData:
             self._visu_to_plc_conv = _to_plc_real_
 
         self._occupied_bytes = [x for x in range(self._address, self._address + self._size)]
+
+    @property
+    def area(self):
+        return self._area
+
+    @property
+    def db_number(self):
+        return self._db_number
 
     @property
     def occupied_bytes(self):

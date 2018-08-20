@@ -2,8 +2,19 @@ import configparser
 import re
 from PyQt5.QtWidgets import QWidget
 
-SUPPORTED_WIDGETS = ['QRadioButton','QPushButton','QLabel','QLineEdit','QCheckBox']
+SUPPORTED_WIDGETS = ['QPushButton','QLabel']
+# SUPPORTED_WIDGETS = ['QRadioButton','QPushButton','QLabel','QLineEdit','QCheckBox']
 
+"""
+QLabel - only for reading
+    slot: setText()
+    
+QPushButton - can be for writing only (checkable=false), and 
+    property: checkable, check by: isCheckable()
+    slot: setChecked(bool)
+    signal: clicked(bool checked = false) "If the button is checkable, checked is true
+                            if the button is checked, or false if the button is unchecked."
+"""
 def find_supported_widgets(widget):
     w_list = widget.findChildren(QWidget)
     for w in w_list:
@@ -39,6 +50,7 @@ class PlcVariableParser:
         val = str_val
         val = val.strip().upper()
         val = val.replace(" ", "")
+        val = val.replace(",", "")
         data_area_match = self._data_area_re.match(val)
         if data_area_match is None:
             raise ValueError('No valid S7 address:{}'.format(str_val))
