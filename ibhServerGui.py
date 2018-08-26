@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'ibhServerGui.ui'
+#
+# Created by: PyQt5 UI code generator 5.10.1
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class Ui_Form(object):
+    def setupUi(self, Form):
+        Form.setObjectName("Form")
+        Form.resize(804, 643)
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(Form)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label = QtWidgets.QLabel(Form)
+        self.label.setObjectName("label")
+        self.horizontalLayout.addWidget(self.label)
+        self.leIpAddress = QtWidgets.QLineEdit(Form)
+        self.leIpAddress.setObjectName("leIpAddress")
+        self.horizontalLayout.addWidget(self.leIpAddress)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.label_2 = QtWidgets.QLabel(Form)
+        self.label_2.setObjectName("label_2")
+        self.horizontalLayout.addWidget(self.label_2)
+        self.lePort = QtWidgets.QLineEdit(Form)
+        self.lePort.setObjectName("lePort")
+        self.horizontalLayout.addWidget(self.lePort)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
+        self.label_3 = QtWidgets.QLabel(Form)
+        self.label_3.setObjectName("label_3")
+        self.horizontalLayout.addWidget(self.label_3)
+        self.leMpiAddress = QtWidgets.QLineEdit(Form)
+        self.leMpiAddress.setObjectName("leMpiAddress")
+        self.horizontalLayout.addWidget(self.leMpiAddress)
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem2)
+        self.btnStart = QtWidgets.QPushButton(Form)
+        self.btnStart.setObjectName("btnStart")
+        self.horizontalLayout.addWidget(self.btnStart)
+        self.btnStop = QtWidgets.QPushButton(Form)
+        self.btnStop.setObjectName("btnStop")
+        self.horizontalLayout.addWidget(self.btnStop)
+        self.horizontalLayout.setStretch(0, 1)
+        self.horizontalLayout.setStretch(1, 6)
+        self.horizontalLayout.setStretch(2, 1)
+        self.horizontalLayout.setStretch(3, 1)
+        self.horizontalLayout.setStretch(4, 1)
+        self.horizontalLayout.setStretch(5, 1)
+        self.horizontalLayout.setStretch(6, 1)
+        self.horizontalLayout.setStretch(7, 1)
+        self.horizontalLayout.setStretch(8, 1)
+        self.horizontalLayout.setStretch(9, 1)
+        self.horizontalLayout.setStretch(10, 1)
+        self.verticalLayout_2.addLayout(self.horizontalLayout)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.ckbAddWhenMissing = QtWidgets.QCheckBox(Form)
+        self.ckbAddWhenMissing.setObjectName("ckbAddWhenMissing")
+        self.horizontalLayout_3.addWidget(self.ckbAddWhenMissing)
+        self.ckb1 = QtWidgets.QCheckBox(Form)
+        self.ckb1.setObjectName("ckb1")
+        self.horizontalLayout_3.addWidget(self.ckb1)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.treeView = QtWidgets.QTreeView(Form)
+        self.treeView.setObjectName("treeView")
+        self.horizontalLayout_2.addWidget(self.treeView)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.verticalLayout_2.setStretch(2, 10)
+
+        self.retranslateUi(Form)
+        QtCore.QMetaObject.connectSlotsByName(Form)
+
+    def retranslateUi(self, Form):
+        _translate = QtCore.QCoreApplication.translate
+        Form.setWindowTitle(_translate("Form", "IBH LINK SERVER EXAMPLE"))
+        self.label.setText(_translate("Form", "IP ADDRESS:"))
+        self.label_2.setText(_translate("Form", "IP PORT:"))
+        self.label_3.setText(_translate("Form", "MPI ADDRESS:"))
+        self.btnStart.setText(_translate("Form", "Start"))
+        self.btnStop.setText(_translate("Form", "Stop"))
+        self.ckbAddWhenMissing.setText(_translate("Form", "Add variable when not existing"))
+        self.ckb1.setText(_translate("Form", "CheckBox"))
+
