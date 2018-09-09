@@ -1,54 +1,98 @@
 import socket
+import sys
+import threading
 import ctypes
+import time
+import data_plc
+
 import IBHconst
+from IbhServerData import IbhDataCollection, data_item
 
 class ToShortSendReceiveTelegramError(Exception):
     pass
 
+
 class CorruptedTelegramError(Exception):
     pass
+
 
 class FaultsInTelegramError(Exception):
     pass
 
-class IbhLinkServer:
-    def __init__(self, ip_addr, ip_port, mpi_addr):
+
+class IbhLinkServer(threading.Thread):
+    def __init__(self, ip_addr, ip_port, mpi_addr, collection: IbhDataCollection):
+        super().__init__(daemon=True)
         self.connected = False
         self.ip_address = ip_addr
         self.ip_port = ip_port
+        self.collection = collection
         if mpi_addr < 0 or mpi_addr > 126:
-            print("mpi_addr < 0 or mpi_addr > 126")
+            raise ValueError("mpi_addr < 0 or mpi_addr > 126")
+        self.plc_status = IBHconst.OP_STATUS_STOP
         self.mpi_address = mpi_addr
         self.msg_number = 0
         self.max_recv_bytes = 512
+        self.abort = threading.Event()
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    def startListen(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(self.ip_address, self.ip_port)
-            s.listen(1)
-            conn,addr = s.accept()
-            with conn:
-                print('Connected by', addr)
-                while True:
-                    data = conn.recv(1024)
-                    # pass data to function
-                    if not data: break
-                    conn.sendall(data)
+    def start(self):
+        self.abort.clear()
+        super().start()
 
+    def stop(self):
+        self.abort.set()
+
+    def run(self):
+        try:
+            self.s.bind((self.ip_address, self.ip_port))
+            # self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            # s.settimeout()
+            self.s.listen(1)
+            while True:
+                while not self.abort.is_set():
+                    try:
+                        print('Try to accept')
+                        conn, addr = self.s.accept()
+                        print('Connected by', addr)
+                        threading.Thread(target=self.clientHandler, args=(conn, addr, self.abort)).start()
+
+
+                    except socket.timeout:
+                        pass
+                # try:
+                #     t.join()
+                # except NameError:
+                #     pass
+        except Exception as e:
+            # conn.shutdown(socket.SHUT_RDWR)
+            self.s.close()
+            print(e.with_traceback())
+            print('Exiting from startServer')
+
+
+    def clientHandler(self, conn: socket.socket, address, stop_event: threading.Event):
+        disconnect = threading.Event()
+        while not stop_event.is_set() and not disconnect.is_set():
+            try:
+                data = conn.recv(self.max_recv_bytes)
+                if data:
+
+                    response = self.produce_respose(data, disconnect)
+                    conn.send(response)
+                else:
+                    raise Exception('Client disconnected')
+            except Exception as e:
+                # conn.shutdown(socket.SHUT_RDWR)
+                conn.close()
+                print(e.with_traceback())
+                return False
+        conn.close()
 
     def stopListen(self):
         pass
 
 
-    def connect_plc(self):
-        try:
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._socket.settimeout(5.0)
-            self._socket.connect((self.ip_address, self.ip_port))
-            self.connected = True
-        except Exception as e:
-            print("Unhandled exception {}".format(e))
-            self.connected = False
 
     def disconnect_plc(self):
         if not self.connected:
@@ -68,81 +112,113 @@ class IbhLinkServer:
         msg_rx = IBHconst.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
 
-        self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
+        self.basic_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
 
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()
         self.connected = False
 
-    def plc_get_run(self):
-        msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
-                                     ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_GET_OP_STATUS,
-                                     device_adr=self.mpi_address)
-        self.msg_number += 1
-
-        self.sendData(bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE])
-
-        raw_bytes = self.receiveData()
-
-        msg_rx = IBHconst.IBHLinkMSG()
-        msg_rx.receiveSome(raw_bytes)
-
-        self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE + 2)
-
-        op_status = int.from_bytes(msg_rx.d[:2], byteorder='big')
-        if op_status == 0:
+    @property
+    def str_plc_status(self) -> str:
+        if self.plc_status == 0:
             return 'STOP'
-        elif op_status == 1:
+        elif self.plc_status == 1:
             return 'START'
-        elif op_status == 2:
+        elif self.plc_status == 2:
             return 'RUN'
         else:
             return 'UNKNOWN'
 
-    def produce_respose(self, data):
+    def set_plc_status(self, val):
+        self.plc_status = val
+
+    def produce_respose(self, data:bytes, disconnect:threading.Event) -> bytes:
         msg_rx = IBHconst.IBHLinkMSG()
         msg_rx.receiveSome(data)
-
-        self.received_telegram_check(msg_rx, IBHconst.TELE_HEADER_SIZE)
-
         msg_tx = IBHconst.IBHLinkMSG()
         msg_tx.rx = msg_rx.tx
         msg_tx.tx = msg_rx.rx
-        msg_tx.ln = ?
+        # msg_tx.ln = ?
         msg_tx.nr = msg_rx.nr
         msg_tx.a = msg_rx.b
-        msg_tx.f = ?
+        msg_tx.f = 0
         msg_tx.b = 0
         msg_tx.e = 0
-        msg_tx.device_adr = self.mpi_address
-        msg_tx.data_area =
-        msg_tx.data_adr =
-        msg_tx.data_idx =
-        msg_tx.data_cnt =
-        msg_tx.data_type = IBHconst.TASK_TDT_UINT8 | IBHconst.TASK_TDT_UINT16
-        msg_tx.func_code = IBHconst.TASK_TFC_READ | IBHconst.TASK_TFC_WRITE
-        msg_tx.d =
+        msg_tx.device_adr = msg_rx.device_adr
+        msg_tx.data_area = msg_rx.data_area
+        msg_tx.data_adr = msg_rx.data_adr
+        msg_tx.data_idx = msg_rx.data_idx
+        msg_tx.data_cnt = msg_rx.data_cnt
+        msg_tx.data_type = msg_rx.data_type
+        msg_tx.func_code = msg_rx.func_code
+        # msg_tx.data_type = IBHconst.TASK_TDT_UINT8 | IBHconst.TASK_TDT_UINT16
+        # msg_tx.func_code = IBHconst.TASK_TFC_READ | IBHconst.TASK_TFC_WRITE
+        # msg_tx.d =
+
+        error = self.basic_telegram_check(msg_rx)
+        if error:
+            msg_tx.ln = 8
+            msg_tx.f = error
+            return bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + msg_tx.ln]
 
         if msg_rx.b == IBHconst.MPI_READ_WRITE_DB:
-            ='D'
-            db_number = msg_rx.data_adr
-            db_offset = (msg_rx.data_area << 8) + msg_rx.data_idx
-        elif msg_rx.b == IBHconst.MPI_GET_OP_STATUS:
-            pass
-        elif msg_rx.b == IBHconst.MPI_READ_WRITE_M:
-            ='M'
+            area ='D'
             data_address = msg_rx.data_adr
+            db_offset = (msg_rx.data_area << 8) + msg_rx.data_idx
+            size = msg_rx.data_cnt
+            if msg_rx.func_code == IBHconst.TASK_TFC_READ:
+                return self.fill_message_with_collection_data(msg_tx,area,data_address,db_offset,size)
+            elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
+                pass
+
+        elif msg_rx.b == IBHconst.MPI_GET_OP_STATUS:
+            msg_tx.ln = IBHconst.TELE_HEADER_SIZE + 2
+            msg_tx.data_cnt = 2
+            ctypes.memmove(ctypes.addressof(msg_tx.d), data_plc._to_plc_word_(self.plc_status), 2)
+            return bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + msg_tx.ln]
+
+        elif msg_rx.b == IBHconst.MPI_READ_WRITE_M:
+            area ='M'
+            data_address = msg_rx.data_adr
+            size = msg_rx.data_cnt
+            if msg_rx.func_code == IBHconst.TASK_TFC_READ:
+                return self.fill_message_with_collection_data(msg_tx, area, data_address, 0, size)
+            elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
+                pass
         elif msg_rx.b == IBHconst.MPI_READ_WRITE_IO:
             pass
         elif msg_rx.b == IBHconst.MPI_READ_WRITE_CNT:
             pass
         elif msg_rx.b == IBHconst.MPI_DISCONNECT:
-            pass
+            msg_tx.ln = 8
+            disconnect.set()
+            return bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE]
 
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()
-        self.connected = False
-
+    def fill_message_with_collection_data(self,msg,area,data_address,db_offset,size):
+        try:
+            val = list()
+            if area == 'D':
+                for i in range(size):
+                    val.append(self.collection.get(data_item(area, data_address, db_offset + i)))
+            else:
+                for i in range(size):
+                    val.append(self.collection.get(data_item(area, data_address + i, 0)))
+            msg.ln = IBHconst.TELE_HEADER_SIZE + msg.data_cnt
+            ctypes.memmove(ctypes.addressof(msg.d), bytes(val), len(val))
+        except ValueError:
+            msg.ln = IBHconst.TELE_HEADER_SIZE
+            msg.f = IBHconst.REJ_IV
+        return bytes(msg)[:IBHconst.MSG_HEADER_SIZE + msg.ln]
+    
+    # def get_bytes_from_collection(self, area, address, db_offset, size):
+    #     _val_list = list()
+    #     if area == 'D':
+    #         for i in range(size):
+    #             _val_list.append(self.collection.get(data_item(area, address, db_offset + i)))
+    #     else:
+    #         for i in range(size):
+    #             _val_list.append(self.collection.get(data_item(area, address + i, db_offset)))
+    #     return bytes(_val_list)
 
     def read_vals(self, data_type, data_number, db_number, size):
 
@@ -150,13 +226,15 @@ class IbhLinkServer:
             print("if size > IBHconst.IBHLINK_READ_MAX or size <= 0:")
             return None
         elif data_type == 'E' or data_type == 'I':
-            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.INPUT_AREA, data_adr=data_number,
+            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.INPUT_AREA,
+                                         data_adr=data_number,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'A' or data_type == 'O':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.OUTPUT_AREA,
                                          data_adr=data_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'M':
-            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_M, data_area=IBHconst.INPUT_AREA, data_adr=data_number,
+            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_M, data_area=IBHconst.INPUT_AREA,
+                                         data_adr=data_number,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'D':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_DB, data_area=data_number >> 8, data_idx=data_number,
@@ -190,7 +268,7 @@ class IbhLinkServer:
         msg_rx = IBHconst.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
 
-        self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE + size)
+        self.basic_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE + size)
 
         if msg_rx.a in [IBHconst.MPI_READ_WRITE_DB, IBHconst.MPI_READ_WRITE_IO, IBHconst.MPI_READ_WRITE_M]:
             list_of_bytes = msg_rx.d[:msg_rx.data_cnt]  # type: list
@@ -257,7 +335,7 @@ class IbhLinkServer:
         msg_rx = IBHconst.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
 
-        self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
+        self.basic_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
 
         return True
 
@@ -280,63 +358,73 @@ class IbhLinkServer:
 
         return raw_bytes
 
-    def received_telegram_check(self, rx, expeceted_rx_ln):
-        if rx.rx != self.mpi_address:
-            raise CorruptedTelegramError('Received telegram transmiter(tx), receiver(rx) not match')
-        elif rx.ln != expeceted_rx_ln:
-            raise CorruptedTelegramError(
-                'Received telegram length message not correct {}, expected {}'.format(rx.ln, expeceted_rx_ln)
-            )
+    def basic_telegram_check(self, rx) -> int:
+        """
+        CON_IV the specified msg.data_cnt parameter invalid. Check the limit of 222 bytes (read)
+        respectively 216 bytes (write) in msg.data_cnt.
 
-    def GetMB(self, Nr):
-        val = self.read_vals('M', Nr, 0, 1)
-        return val[0]
+        CON_NA no response of the remote station remote station check network wiring, check remote
+        address, check baud rate
+        """
+        if rx.b in [IBHconst.MPI_READ_WRITE_DB, IBHconst.MPI_READ_WRITE_IO, IBHconst.MPI_READ_WRITE_M,
+                    IBHconst.MPI_READ_WRITE_CNT, IBHconst.MPI_READ_WRITE_TIM]:
+            if rx.func_code == IBHconst.TASK_TFC_READ and rx.data_cnt > IBHconst.IBHLINK_READ_MAX:
+                return IBHconst.CON_IV
+            if rx.func_code == IBHconst.TASK_TFC_WRITE and rx.data_cnt > IBHconst.IBHLINK_WRITE_MAX:
+                return IBHconst.CON_IV
 
-    def GetMW(self, Nr):
-        val = self.read_vals('M', Nr, 0, 2)
-        return int.from_bytes(val, byteorder='big')
+        if rx.device_adr != self.mpi_address:
+            return IBHconst.CON_NA
 
-    def GetMD(self, Nr):
-        val = self.read_vals('M', Nr, 0, 4)
-        return int.from_bytes(val, byteorder='big')
-
-    def GetM(self, Nr, BitNr):
-        val = self.read_vals('M', Nr, 0, 1)
-        mask = 1 << BitNr
-        return val & mask != 0
-
-    def SetMB(self, Nr, val):
-        self.write_vals('M', Nr, 0, 1, val)
-
-    # TODO: Sprawdź metody czy nie trzeba ustawić byteorder
-    def SetMW(self, Nr, val):
-        self.write_vals('M', Nr, 0, 2, val)
-
-    def SetMD(self, Nr, val):
-        self.write_vals('M', Nr, 0, 4, val)
-
-    def SetM(self, Nr, BitNr, val):
-        if BitNr > 7:
-            raise ValueError("Given 'BitNr' greater than 7".format(type(BitNr)))
-        old_val = self.read_vals('M', Nr, 0, 1)
-        mask = 1 << BitNr
-
-        if val:
-            new_val = old_val | mask
-        else:
-            new_val = old_val & (0xff - mask)
-
-        self.write_vals('M', Nr, 0, 1, new_val)
+        return 0
 
 
+"""
+REJ_IV specified offset address out of limits or not known in the remote station.
+ Please check msg.data_adr if present or offset parameter in request message.
+"""
+
+"""
+REJ_OP specified length to write or to read results in an access outside the limits.
+Please check msg.data_cnt length in request message.
+"""
+
+"""
+REJ_HW specified address not defined in the remote station. Please check msg.data_adr in the
+request message.
+"""
+
+
+def externalClientHandler(conn, address, stop_event: threading.Event):
+    while not stop_event.is_set():
+        try:
+            data = conn.recv(512)
+            if data:
+
+                print(data)
+                conn.send(data)
+            else:
+                raise Exception('Client disconnected')
+        except Exception as e:
+            # conn.shutdown(socket.SHUT_RDWR)
+            conn.close()
+            print(e.with_traceback())
+            return False
 
 if __name__ == "__main__":
-    driver = IbhLinkServer('192.168.1.15', 1099, 2)
-    # driver = ibhlinkdriver('127.0.0.1', 1099, 2)
-    driver.connect_plc()
-    print("connected {}".format(driver.connected))
+    # driver = IbhLinkServer('192.168.1.15', 1099, 2)
+    collection = IbhDataCollection()
+    collection.add_if_not_exist(1)
+    collection.set(data_item('D',100,0),13)
+    server = IbhLinkServer('127.0.0.1', 1099, 2, collection)
+    server.start()
+    # print("connected {}".format(server.connected))
     # print(driver.plc_get_run())
     # print(driver.read_vals('M',10,10,1))
-    print(driver.read_vals('D', 0, 100, 1))
+    # print(server.read_vals('D', 0, 100, 1))
     # print(driver.plc_get_run())
-    driver.disconnect_plc()
+    # server.disconnect_plc()
+    # time.sleep(100)
+    # server.stop()
+    server.join()
+    print('END')

@@ -198,11 +198,22 @@ class Worker(QObject):
         if not self._driver.connected:
             self._driver.connect_plc()
 
-        vals = self._driver.read_vals(data_type, data_number, db_number, size)
-        self.read_bytes_signal.emit(vals)
-        self._driver.disconnect_plc()
-        # self.read_bytes_signal.emit([1,2,3,4,5,6,7,8])
+        if self._driver.connected:
+            vals = self._driver.read_vals(data_type, data_number, db_number, size)
+            self.read_bytes_signal.emit(vals)
+            self._driver.disconnect_plc()
+            # self.read_bytes_signal.emit([1,2,3,4,5,6,7,8])
 
+
+    @pyqtSlot()
+    def get_plc_status(self):
+        if not self._driver.connected:
+            self._driver.connect_plc()
+
+        if self._driver.connected:
+            status = self._driver.plc_get_run()
+            self.get_plc_status_signal.emit(status)
+            self._driver.disconnect_plc()
 
     # TODO: slot for writing list<int>
 
@@ -212,5 +223,6 @@ class Worker(QObject):
 
     # TODO: signal with read list of bytes
     read_bytes_signal = pyqtSignal(list)
+    get_plc_status_signal = pyqtSignal(str)
     # TODO: signal with error
 

@@ -1,14 +1,29 @@
+import logging
 import socket
 import ctypes
 import IBHconst
 
-class ToShortSendReceiveTelegramError(Exception):
+
+logger = logging.getLogger('gui logger')
+logger.setLevel(logging.DEBUG)
+fh = logging.FileHandler('gui.log')
+fh.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(relativeCreated)6d %(threadName)s: %(message)s')
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+
+logger.debug("Hallo")
+
+class DriverError(Exception):
     pass
 
-class CorruptedTelegramError(Exception):
+class ToShortSendReceiveTelegramError(DriverError):
     pass
 
-class FaultsInTelegramError(Exception):
+class CorruptedTelegramError(DriverError):
+    pass
+
+class FaultsInTelegramError(DriverError):
     pass
 
 class ibhlinkdriver:
@@ -25,10 +40,11 @@ class ibhlinkdriver:
     def connect_plc(self):
         try:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._socket.settimeout(5.0)
+            # self._socket.settimeout(5.0)
             self._socket.connect((self.ip_address, self.ip_port))
+            logger.debug("Connected to:{}".format(self.ip_address))
             self.connected = True
-        except Exception as e:
+        except ConnectionRefusedError as e:
             print("Unhandled exception {}".format(e))
             self.connected = False
 
@@ -54,6 +70,7 @@ class ibhlinkdriver:
 
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()
+        logger.debug("Disconnected:{}".format(self.ip_address))
         self.connected = False
 
     def plc_get_run(self):
@@ -71,7 +88,7 @@ class ibhlinkdriver:
 
         self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE + 2)
 
-        op_status = int.from_bytes(msg_rx.d[:2], byteorder='big')
+        op_status = int.from_bytes(msg_rx.d[:2], byteorder='little')
         if op_status == 0:
             return 'STOP'
         elif op_status == 1:
@@ -199,6 +216,7 @@ class ibhlinkdriver:
         return True
 
     def sendData(self, raw_bytes):
+        logger.debug("Sending:{}".format(raw_bytes))
         bytes_count = self._socket.send(raw_bytes)
         if bytes_count != len(raw_bytes):
             raise ToShortSendReceiveTelegramError(
@@ -208,17 +226,20 @@ class ibhlinkdriver:
 
     def receiveData(self):
         raw_bytes = self._socket.recv(self.max_recv_bytes)
+        logger.debug("Receiving:{}".format(raw_bytes))
 
         if len(raw_bytes) < IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE:
             raise ToShortSendReceiveTelegramError(
                 'Received telegram is too short is {}, expected {}'.format(len(raw_bytes),
-                                                                           IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE)
+                 IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE)
             )
 
         return raw_bytes
 
     def received_telegram_check(self, tx, rx, expeceted_rx_ln):
-        if rx.tx != tx.rx or rx.rx != tx.tx:
+        if rx.f != IBHconst.CON_OK:
+            raise FaultsInTelegramError('Received telegram error code non zero value, error code(f)={}'.format(rx.f))
+        elif rx.tx != tx.rx or rx.rx != tx.tx:
             raise CorruptedTelegramError('Received telegram transmiter(tx), receiver(rx) not match')
         elif rx.ln != expeceted_rx_ln:
             raise CorruptedTelegramError(
@@ -228,8 +249,6 @@ class ibhlinkdriver:
             raise CorruptedTelegramError('Sent and received telegram message number(nr) not match')
         elif rx.a != tx.b:
             raise CorruptedTelegramError('Sent and received telegram command code(b), response code(a) not match')
-        elif rx.f != IBHconst.CON_OK:
-            raise FaultsInTelegramError('Received telegram error code non zero value, error code(f)={}'.format(rx.f))
         elif rx.device_adr != tx.device_adr:
             raise CorruptedTelegramError('Sent and received telegram device address(device_adr) not match')
         elif rx.data_area != tx.data_area:

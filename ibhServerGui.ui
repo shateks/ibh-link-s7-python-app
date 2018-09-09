@@ -24,7 +24,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="leIpAddress"/>
+      <widget class="QLineEdit" name="leIpAddress">
+       <property name="inputMask">
+        <string>ddd.ddd.ddd.ddd; </string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -47,7 +51,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lePort"/>
+      <widget class="QLineEdit" name="lePort">
+       <property name="inputMask">
+        <string>ddddd; </string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer_2">
@@ -70,7 +78,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="leMpiAddress"/>
+      <widget class="QLineEdit" name="leMpiAddress">
+       <property name="inputMask">
+        <string>ddd; </string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer_3">

@@ -10,19 +10,19 @@ def _from_plc_byte_(list_of_bytes):
     return list_of_bytes[0]
 
 def _from_plc_sint_(list_of_bytes):
-    return int.from_bytes(list_of_bytes[0], byteorder='big', signed=True)
+    return int.from_bytes(list_of_bytes[0], byteorder='little', signed=True)
 
 def _from_plc_word_(list_of_bytes):
-    return int.from_bytes(list_of_bytes[:2], byteorder='big')
+    return int.from_bytes(list_of_bytes[:2], byteorder='little')
 
 def _from_plc_int_(list_of_bytes):
-    return int.from_bytes(list_of_bytes[:2], byteorder='big', signed=True)
+    return int.from_bytes(list_of_bytes[:2], byteorder='little', signed=True)
 
 def _from_plc_dword_(list_of_bytes):
-    return int.from_bytes(list_of_bytes[:4], byteorder='big')
+    return int.from_bytes(list_of_bytes[:4], byteorder='little')
 
 def _from_plc_dint_(list_of_bytes):
-    return int.from_bytes(list_of_bytes[:4], byteorder='big', signed=True)
+    return int.from_bytes(list_of_bytes[:4], byteorder='little', signed=True)
 
 def _from_plc_real_(list_of_bytes):
     """

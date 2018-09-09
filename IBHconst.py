@@ -57,6 +57,11 @@ REJ_OP = 0x87  # specified length to write or to read results in an access outsi
 
 dataArray = c_uint8 * 240
 
+OP_STATUS_STOP    = 0
+OP_STATUS_START   = 1
+OP_STATUS_RUN     = 2
+OP_STATUS_UNKNOWN = 3
+
 class IBHLinkMSG(Structure):
 
     _pack_ = 1

@@ -82,8 +82,11 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "IBH LINK SERVER EXAMPLE"))
         self.label.setText(_translate("Form", "IP ADDRESS:"))
+        self.leIpAddress.setInputMask(_translate("Form", "ddd.ddd.ddd.ddd; "))
         self.label_2.setText(_translate("Form", "IP PORT:"))
+        self.lePort.setInputMask(_translate("Form", "ddddd; "))
         self.label_3.setText(_translate("Form", "MPI ADDRESS:"))
+        self.leMpiAddress.setInputMask(_translate("Form", "ddd; "))
         self.btnStart.setText(_translate("Form", "Start"))
         self.btnStop.setText(_translate("Form", "Stop"))
         self.ckbAddWhenMissing.setText(_translate("Form", "Add variable when not existing"))

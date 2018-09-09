@@ -1,7 +1,10 @@
 from PyQt5 import QtCore
-from IbhServerData import data_item, IbhDataCollection, BaseItem, ValueItem
-import PyQt5.Qt
-from PyQt5.QtCore import QModelIndex
+from PyQt5.QtGui import QIntValidator
+
+from IbhServerData import IbhDataCollection, BaseItem, ValueItem
+from PyQt5.QtCore import QModelIndex, QAbstractItemModel, QSortFilterProxyModel
+from PyQt5.QtWidgets import QItemDelegate, QLineEdit
+
 
 class Model(QtCore.QAbstractItemModel):
 
@@ -30,13 +33,13 @@ class Model(QtCore.QAbstractItemModel):
 
         return self.createIndex(parent_item.row(), 0, parent_item)
 
-    def flags(self, QModelIndex):
-        return QtCore.Qt.ItemIsEnabled
+    def flags(self, index):
+        logic_sum = QtCore.Qt.ItemIsEnabled
+        if index.column() == 2:
+            logic_sum |= QtCore.Qt.ItemIsEditable
+        return logic_sum
 
     def index(self, row, col, parent=None, *args, **kwargs):
-        if not self.hasIndex(row,col,parent):
-            return QtCore.QModelIndex()
-
         if not parent.isValid():
             parent_ref = self._root
         else:
@@ -52,7 +55,6 @@ class Model(QtCore.QAbstractItemModel):
         """
 
         :param QModelIndex parent:
-        :rtype: QModelIndex
         """
         if not parent.isValid():
             parent_item = self._root
@@ -61,9 +63,7 @@ class Model(QtCore.QAbstractItemModel):
         return parent_item.childCount()
 
     def columnCount(self, parent=None, *args, **kwargs):
-        # if type(parent.internalPointer().) is ValueItem:
-        #     return 2
-        return 2
+        return 3
 
     def data(self, index, role=None):
         """
@@ -76,14 +76,79 @@ class Model(QtCore.QAbstractItemModel):
         item = index.internalPointer()
 
         if role == QtCore.Qt.DisplayRole:
-            # return index.column()
+
             if type(item) is BaseItem:
                 if index.column() == 0:
                     return item.name()
                 else:
                     return None
             if type(item) is ValueItem:
-                if index.column() == 0:
+                if index.column() == 1:
                     return item.name()
-                else:
+                elif index.column() == 2:
                     return item.value
+        if role == QtCore.Qt.EditRole:
+            if index.column() == 0:
+                return item.name()
+
+    def headerData(self, section, Qt_Orientation, role=None):
+        if role == QtCore.Qt.DisplayRole:
+            if section == 0:
+                return 'Memory area'
+            elif section == 1:
+                return 'Address/Offset'
+            elif section == 2:
+                return 'Value'
+
+    def setData(self, index, value, role=None):
+        if index.isValid():
+
+            item = index.internalPointer()
+
+            if role == QtCore.Qt.EditRole and type(item) is ValueItem:
+                item.value = value
+                self.dataChanged.emit(index, index)
+                return True
+
+        return False
+
+class ChangeByteDelegate(QItemDelegate):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def createEditor(self, parent, option, index):
+        line_edit = QLineEdit(parent)
+        value_validator = QIntValidator(0,255)
+        line_edit.setValidator(value_validator)
+        return line_edit
+
+    def setEditorData(self, editor, index):
+        value = index.internalPointer().value
+        editor.setText(str(value))
+
+    def setModelData(self, editor: QLineEdit, model: QAbstractItemModel, index: QModelIndex):
+        value = int(editor.text())
+        model.setData(index, value, QtCore.Qt.EditRole)
+
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
+
+class ProxySortModel(QSortFilterProxyModel):
+
+    def lessThan(self, left_index: QModelIndex, right_index: QModelIndex):
+        left_item = left_index.internalPointer()
+        right_item = right_index.internalPointer()
+        if left_item.childCount() == 0:
+
+            if left_item.name() < right_item.name():
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def sort(self, column, order=None):
+        if column == 1:
+            super().sort(column, order)
+
