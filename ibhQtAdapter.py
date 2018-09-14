@@ -169,6 +169,16 @@ class Worker(QObject):
         super().__init__()
         self._driver = ibhlinkdriver.ibhlinkdriver(ip_address, IBHconst.IBHLINK_PORT, mpi_address)
         self._stay_connected = False
+        self._change_driver = False
+
+    @pyqtSlot(str, int, int)
+    def change_communication_parameters(self, ip_address, ip_port, mpi_address):
+        if not self._driver.connected:
+            self._driver.ip_address = ip_address
+            self._driver.ip_port = ip_port
+            self._driver.mpi_address = mpi_address
+        else:
+            self.failure_signal('Communication parameters cannot be changed, driver is still connected.')
 
     @property
     def stay_connected(self):
@@ -185,7 +195,7 @@ class Worker(QObject):
         False - driver disconnects after every read/wirte operation
         :param val: Bool
         """
-        self._stay_connected = val
+        self._stay_connected = bool(val)
 
     @pyqtSlot(str, int, int, int)
     def read_bytes(self, data_type, data_number, db_number, size):
@@ -207,14 +217,16 @@ class Worker(QObject):
 
     @pyqtSlot()
     def get_plc_status(self):
-        if not self._driver.connected:
-            self._driver.connect_plc()
+        try:
+            if not self._driver.connected:
+                self._driver.connect_plc()
 
-        if self._driver.connected:
-            status = self._driver.plc_get_run()
-            self.get_plc_status_signal.emit(status)
-            self._driver.disconnect_plc()
-
+            if self._driver.connected:
+                status = self._driver.plc_get_run()
+                self.get_plc_status_signal.emit(status)
+                self._driver.disconnect_plc()
+        except ibhlinkdriver.DriverError as e:
+            self.failure_signal.emit(str(e))
     # TODO: slot for writing list<int>
 
     # TODO: slot for reading any bit in byte
@@ -222,6 +234,7 @@ class Worker(QObject):
     # TODO: slot for writing any bit in byte
 
     # TODO: signal with read list of bytes
+    failure_signal = pyqtSignal(str)
     read_bytes_signal = pyqtSignal(list)
     get_plc_status_signal = pyqtSignal(str)
     # TODO: signal with error
