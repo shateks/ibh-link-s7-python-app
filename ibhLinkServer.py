@@ -173,7 +173,6 @@ class IbhLinkServer(threading.Thread):
 
         elif msg_rx.b == IBHconst.MPI_GET_OP_STATUS:
             msg_tx.ln = IBHconst.TELE_HEADER_SIZE + 2
-            msg_tx.data_cnt = 2
             ctypes.memmove(ctypes.addressof(msg_tx.d), data_plc._to_plc_word_(self.plc_status), 2)
             return bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + msg_tx.ln]
 
