@@ -113,7 +113,7 @@ class IbhDataCollection():
                 self._collection['D'][item.address][item.offset].value = value
             else:
                 self._collection[item.area][item.address].value = value
-        elif self.add_if_not_exist:
+        elif self._add_if_not_exist:
             self.append(item, value)
         else:
             raise ValueError('No valid type of area, or item not in collection, item={}'.format(item))
