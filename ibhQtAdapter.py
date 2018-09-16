@@ -1,3 +1,5 @@
+import logging
+
 from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QLabel, QPushButton
 import time
@@ -25,6 +27,9 @@ Supported graphic elements:
 - QPushbutton with "checkable" option, as bistable button
 - Qlineedit
 """
+
+logger = logging.getLogger(__name__)
+
 class Status(Enum):
     ready = 1
     busy = 2
@@ -178,7 +183,7 @@ class Worker(QObject):
             self._driver.ip_port = ip_port
             self._driver.mpi_address = mpi_address
         else:
-            self.failure_signal('Communication parameters cannot be changed, driver is still connected.')
+            self.failure_signal.emit('Communication parameters cannot be changed, driver is still connected.')
 
     @property
     def stay_connected(self):
@@ -205,14 +210,45 @@ class Worker(QObject):
         :param db_number: int - in case of type 'D' number of DB block
         :param size: int - number of bytes to read beginning from target 'data_number'
         """
-        if not self._driver.connected:
-            self._driver.connect_plc()
+        try:
+            if not self._driver.connected:
+                self._driver.connect_plc()
 
-        if self._driver.connected:
-            vals = self._driver.read_vals(data_type, data_number, db_number, size)
-            self.read_bytes_signal.emit(vals)
-            self._driver.disconnect_plc()
-            # self.read_bytes_signal.emit([1,2,3,4,5,6,7,8])
+            if self._driver.connected:
+                vals = self._driver.read_vals(data_type, data_number, db_number, size)
+                self.read_bytes_signal.emit(vals)
+                self._driver.disconnect_plc()
+        except ibhlinkdriver.DriverError as e:
+            logger.warning(str(e))
+        finally:
+            if not self.stay_connected:
+                self._driver.disconnect_plc()
+
+
+    @pyqtSlot(str, int, int, int, int)
+    def write_bytes(self, data_type, data_number, db_number, size, val):
+        """
+        :param data_type: string - M, E or I, A or Q, D
+        :param data_number: int - number of data
+        :param db_number: int - in case of type 'D' number of DB block
+        :param size: int - number of bytes to read beginning from target 'data_number'
+        :param val: int - value to be writen
+        """
+        try:
+            if not self._driver.connected:
+                self._driver.connect_plc()
+
+            if self._driver.connected:
+                b_vals = val.to_bytes(max((val.bit_length() + 7) // 8, 1), byteorder='big')
+                self._driver.write_vals(data_type, data_number, db_number, size, b_vals)
+                self.write_bytes_signal.emit()
+                self._driver.disconnect_plc()
+        except ibhlinkdriver.DriverError as e:
+            logger.warning(str(e))
+        finally:
+            if not self.stay_connected:
+                self._driver.disconnect_plc()
+
 
 
     @pyqtSlot()
@@ -227,6 +263,9 @@ class Worker(QObject):
                 self._driver.disconnect_plc()
         except ibhlinkdriver.DriverError as e:
             self.failure_signal.emit(str(e))
+        finally:
+            if not self.stay_connected:
+                self._driver.drop_connection()
     # TODO: slot for writing list<int>
 
     # TODO: slot for reading any bit in byte
@@ -236,6 +275,7 @@ class Worker(QObject):
     # TODO: signal with read list of bytes
     failure_signal = pyqtSignal(str)
     read_bytes_signal = pyqtSignal(list)
+    write_bytes_signal = pyqtSignal()
     get_plc_status_signal = pyqtSignal(str)
     # TODO: signal with error
 
