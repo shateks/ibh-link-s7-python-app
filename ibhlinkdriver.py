@@ -3,16 +3,15 @@ import socket
 import ctypes
 import IBHconst
 
-
-logger = logging.getLogger('gui logger')
-logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('gui.log')
-fh.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(relativeCreated)6d %(threadName)s: %(message)s')
-fh.setFormatter(formatter)
-logger.addHandler(fh)
-
-logger.debug("Hallo")
+logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
+# fh = logging.FileHandler('gui.log')
+# fh.setLevel(logging.DEBUG)
+# formatter = logging.Formatter('%(relativeCreated)6d %(threadName)s: %(message)s')
+# fh.setFormatter(formatter)
+# logger.addHandler(fh)
+#
+# logger.debug("Hallo")
 
 class DriverError(Exception):
     pass
@@ -24,6 +23,9 @@ class CorruptedTelegramError(DriverError):
     pass
 
 class FaultsInTelegramError(DriverError):
+    pass
+
+class SocketUnexpectedDisconnected(DriverError):
     pass
 
 class ibhlinkdriver:
@@ -46,6 +48,7 @@ class ibhlinkdriver:
             self.connected = True
         except ConnectionRefusedError as e:
             print("Unhandled exception {}".format(e))
+            logger.warning("Exception during connecting: {}".format(e))
             self.connected = False
 
     def disconnect_plc(self):
@@ -68,10 +71,14 @@ class ibhlinkdriver:
 
         self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
 
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()
+        self.drop_connection()
         logger.debug("Disconnected:{}".format(self.ip_address))
-        self.connected = False
+
+    def drop_connection(self):
+        if not self._socket._closed:
+            self._socket.shutdown(socket.SHUT_RDWR)
+            self._socket.close()
+            self.connected = False
 
     def plc_get_run(self):
         msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
@@ -99,14 +106,14 @@ class ibhlinkdriver:
             return 'UNKNOWN'
 
     def read_vals(self, data_type, data_number, db_number, size):
-
+        logger.debug('Reading vals:{}, address {}, db {}, size {}'.format(data_type,data_number,db_number,size))
         if size > IBHconst.IBHLINK_READ_MAX or size <= 0:
             print("if size > IBHconst.IBHLINK_READ_MAX or size <= 0:")
             return None
         elif data_type == 'E' or data_type == 'I':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.INPUT_AREA, data_adr=data_number,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
-        elif data_type == 'A' or data_type == 'O':
+        elif data_type == 'A' or data_type == 'O' or data_type == 'Q':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.OUTPUT_AREA,
                                          data_adr=data_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'M':
@@ -159,6 +166,10 @@ class ibhlinkdriver:
         # TODO: implementacja write
         if not type(vals) is bytes:
             raise TypeError("Given 'vals' of type {}, use bytes object".format(type(vals)))
+        if len(vals) != size:
+            logger.warning("Length of byte array({}) is not equal to size of write{}".format(len(vals),size))
+            if len(vals) < size:
+                size = len(vals)
         if size > IBHconst.IBHLINK_WRITE_MAX or size <= 0:
             print("if size > IBHconst.IBHLINK_WRITE_MAX or size <= 0:")
             return None
@@ -167,7 +178,7 @@ class ibhlinkdriver:
                                          data_area=IBHconst.INPUT_AREA, data_adr=data_number,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
-        elif data_type == 'A' or data_type == 'O':
+        elif data_type == 'A' or data_type == 'O' or data_type == 'Q':
             msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_IO,
                                          data_area=IBHconst.OUTPUT_AREA, data_adr=data_number,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
@@ -183,7 +194,7 @@ class ibhlinkdriver:
                                          data_adr=db_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
         elif size > IBHconst.IBHLINK_WRITE_MAX / 2:
-            print("size > IBHconst.IBHLINK_WRITE_MAX/2")
+            logger.warning("size > IBHconst.IBHLINK_WRITE_MAX/2")
             return None
         elif data_type == 'T':
             # TODO: implementacja read 'T'
@@ -192,7 +203,7 @@ class ibhlinkdriver:
             # TODO: implementacja read 'C'
             pass
         else:
-            print("No valid data type")
+            logger.warning("No valid data type")
             return None
 
         msg_tx.rx = IBHconst.MPI_TASK
@@ -229,16 +240,20 @@ class ibhlinkdriver:
         logger.debug("Receiving:{}".format(raw_bytes))
 
         if len(raw_bytes) < IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE:
-            raise ToShortSendReceiveTelegramError(
-                'Received telegram is too short is {}, expected {}'.format(len(raw_bytes),
-                 IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE)
-            )
+            if len(raw_bytes) == 0:
+                self.drop_connection()
+                raise SocketUnexpectedDisconnected('Zero length data received, closing socket')
+            else:
+                raise ToShortSendReceiveTelegramError(
+                    'Received telegram is too short is {}, expected {}'.format(len(raw_bytes),
+                    IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE)
+                )
 
         return raw_bytes
 
     def received_telegram_check(self, tx, rx, expeceted_rx_ln):
         if rx.f != IBHconst.CON_OK:
-            raise FaultsInTelegramError('Received telegram error code non zero value, error code(f)={}'.format(rx.f))
+            raise FaultsInTelegramError('Received telegram error code non zero value, error code(f)={0:#x}'.format(rx.f))
         elif rx.tx != tx.rx or rx.rx != tx.tx:
             raise CorruptedTelegramError('Received telegram transmiter(tx), receiver(rx) not match')
         elif rx.ln != expeceted_rx_ln:
