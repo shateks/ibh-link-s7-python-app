@@ -1,8 +1,6 @@
 import socket
-import sys
 import threading
 import ctypes
-import time
 import data_plc
 from safe_connector import SafeConnector
 import IBHconst
@@ -40,7 +38,6 @@ class IbhLinkServer(threading.Thread):
         self.msg_number = 0
         self.max_recv_bytes = 512
         self.abort = threading.Event()
-        # self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def start(self):
         self.abort.clear()
@@ -57,49 +54,11 @@ class IbhLinkServer(threading.Thread):
             s.listen(1)
             while not self.abort.is_set():
                 try:
-                    # TODO: add timeout option, because "self.abort.is_set()" will never be checked
-                    print('Try to accept')
                     conn, addr = s.accept()
                     print('Connected by', addr)
                     threading.Thread(target=self.clientHandler, args=(conn, addr, self.abort)).start()
                 except socket.timeout:
                     pass
-
-
-
-        # # try:
-        #     self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #     self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        #     self.s.bind((self.ip_address, self.ip_port))
-        #     self.s.settimeout(1.0)
-        #     self.s.listen(1)
-        #     while True:
-        #         while not self.abort.is_set():
-        #             try:
-        #                 # TODO: add timeout option, because "self.abort.is_set()" will never be checked
-        #                 print('Try to accept')
-        #                 conn, addr = self.s.accept()
-        #                 print('Connected by', addr)
-        #                 threading.Thread(target=self.clientHandler, args=(conn, addr, self.abort)).start()
-        #             except socket.timeout:
-        #                 pass
-        #         # TODO: Have to add a wait condition for all threads(clientHandlers) to finish
-        #
-        # except Exception as e:
-        #     # conn.shutdown(socket.SHUT_RDWR)
-        #     print('Exiting from startServer')
-        #     self.drop_server()
-        #     # self.s.shutdown(socket.SHUT_RDWR)
-        #     # self.s.close()
-        #     # print(e.with_traceback())
-
-
-    # def drop_server(self):
-    #     if not self.s._closed:
-    #         self.s.shutdown(socket.SHUT_RDWR)
-    #         self.s.close()
-    #         self.connected = False
-    #         self.s = None
 
     def clientHandler(self, conn: socket.socket, address, stop_event: threading.Event):
         print("clientHandler")
@@ -210,6 +169,7 @@ class IbhLinkServer(threading.Thread):
                 return self.fill_message_with_collection_data(msg_tx, area, data_address, 0, size)
             elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
                 return self.fill_collection_with_message_data(msg_tx, area, data_address, 0, size, msg_rx.d)
+
         elif msg_rx.b == IBHconst.MPI_READ_WRITE_IO:
             if msg_rx.data_area == IBHconst.INPUT_AREA:
                 area = 'I'
@@ -221,22 +181,59 @@ class IbhLinkServer(threading.Thread):
                 return self.fill_message_with_collection_data(msg_tx, area, data_address, 0, size)
             elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
                 return self.fill_collection_with_message_data(msg_tx, area, data_address, 0, size, msg_rx.d)
+
         elif msg_rx.b == IBHconst.MPI_READ_WRITE_CNT:
-            pass
+            area = 'C'
+            data_address = msg_rx.data_adr
+            size = msg_rx.data_cnt
+            if msg_rx.func_code == IBHconst.TASK_TFC_READ:
+                return self.fill_message_with_collection_data(msg_tx, area, data_address, 0, size)
+            elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
+                return self.fill_collection_with_message_data(msg_tx, area, data_address, 0, size, msg_rx.d)
+
+        elif msg_rx.b == IBHconst.MPI_READ_WRITE_TIM:
+            area = 'T'
+            data_address = msg_rx.data_adr
+            size = msg_rx.data_cnt
+            if msg_rx.func_code == IBHconst.TASK_TFC_READ:
+                return self.fill_message_with_collection_data(msg_tx, area, data_address, 0, size)
+            elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
+                return self.fill_collection_with_message_data(msg_tx, area, data_address, 0, size, msg_rx.d)
+
         elif msg_rx.b == IBHconst.MPI_DISCONNECT:
             msg_tx.ln = 8
             disconnect.set()
             return bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE]
 
-    def fill_message_with_collection_data(self,msg,area,data_address,db_offset,size):
+    def fill_message_with_collection_data(self, msg, area, data_address, db_offset, size):
+        """
+        Fills "msg" some fields with collection data, pointed by "area","data_address","db_offser","size".
+        In case of positive or negative result, function return ready for sending bytes.
+        :param msg: IBHconst.IBHLinkMSG - prepared message
+        :param area: str - 'D','M','I','Q'
+        :param data_address:
+        :param db_offset:
+        :param size:
+        :return: bytes
+        """
         try:
             val = list()
             if area == 'D':
                 for i in range(size):
-                    val.append(self.collection.get(data_item(area, data_address, db_offset + i)))
+                    _item = data_item(area, data_address, db_offset + i)
+                    _exist = self.collection.is_in_collection(_item)
+                    val.append(self.collection.get(_item))
             else:
                 for i in range(size):
-                    val.append(self.collection.get(data_item(area, data_address + i, 0)))
+                    _item = data_item(area, data_address + i, 0)
+                    _exist = self.collection.is_in_collection(_item)
+                    val.append(self.collection.get(_item))
+
+            if self.connector and not _exist:
+                self.connector.emit(EventType.added, area)
+            elif self.connector and _exist:
+                self.connector.emit(EventType.changed, area)
+
             msg.ln = IBHconst.TELE_HEADER_SIZE + msg.data_cnt
             ctypes.memmove(ctypes.addressof(msg.d), bytes(val), len(val))
         except ValueError:
@@ -246,14 +243,16 @@ class IbhLinkServer(threading.Thread):
 
     def fill_collection_with_message_data(self, msg, area, data_address, db_offset, size, array):
         """
-
+        Fills "msg" some fields with answer of operation, collection data, pointed by "area","data_address",
+        "db_offser","size","array".
+        In case of positive or negative result, function return ready for sending bytes.
         :param msg: IBHconst.IBHLinkMSG
-        :param area: str
+        :param area: str - 'D','M','I','Q'
         :param data_address: int
         :param db_offset: int
         :param size: int
         :param array: IBHconst.dataArray
-        :return: IBHconst.IBHLinkMSG
+        :return: bytes
         """
         try:
             val = list(array[:size])
