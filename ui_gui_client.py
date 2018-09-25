@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_gui.ui'
+# Form implementation generated from reading ui file 'ui_gui_client.ui'
 #
 # Created by: PyQt5 UI code generator 5.10.1
 #
@@ -121,23 +121,6 @@ class Ui_Form(object):
         self.le_variable_offset.setObjectName("le_variable_offset")
         self.gridLayout_5.addWidget(self.le_variable_offset, 0, 0, 1, 1)
         self.horizontalLayout_2.addWidget(self.groupBox_6)
-        self.groupBox_7 = QtWidgets.QGroupBox(self.groupBox_3)
-        self.groupBox_7.setEnabled(True)
-        font = QtGui.QFont()
-        font.setPointSize(9)
-        font.setBold(True)
-        font.setItalic(False)
-        font.setWeight(75)
-        self.groupBox_7.setFont(font)
-        self.groupBox_7.setFlat(False)
-        self.groupBox_7.setObjectName("groupBox_7")
-        self.gridLayout_6 = QtWidgets.QGridLayout(self.groupBox_7)
-        self.gridLayout_6.setObjectName("gridLayout_6")
-        self.sb_variable_bit_number = QtWidgets.QSpinBox(self.groupBox_7)
-        self.sb_variable_bit_number.setMaximum(7)
-        self.sb_variable_bit_number.setObjectName("sb_variable_bit_number")
-        self.gridLayout_6.addWidget(self.sb_variable_bit_number, 0, 0, 1, 1)
-        self.horizontalLayout_2.addWidget(self.groupBox_7)
         self.groupBox_9 = QtWidgets.QGroupBox(self.groupBox_3)
         self.groupBox_9.setEnabled(True)
         font = QtGui.QFont()
@@ -251,7 +234,6 @@ class Ui_Form(object):
         self.le_variable_address.setInputMask(_translate("Form", "00000; "))
         self.groupBox_6.setTitle(_translate("Form", "Offset"))
         self.le_variable_offset.setInputMask(_translate("Form", "0000; "))
-        self.groupBox_7.setTitle(_translate("Form", "Bit number"))
         self.groupBox_9.setTitle(_translate("Form", "Bytes count"))
         self.groupBox_8.setTitle(_translate("Form", "Value"))
         self.le_variable_value.setInputMask(_translate("Form", "00000000000000000000000000000000; "))

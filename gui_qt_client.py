@@ -1,14 +1,9 @@
-import logging
 import logging.handlers
-import sys
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QApplication, QWidget, QTextEdit
-from ui_gui import *
+import sys, os
+from PyQt5.QtWidgets import QApplication, QWidget
+from ui_gui_client import *
 from ibhQtAdapter import *
 from PyQt5.QtCore import QThread, Qt
-
-def killnij():
-    print('killnij() {}'.format(QThread.currentThreadId()))
 
 MEMORY_AREA_LIST = ['I - INPUT','Q - QUTPUT','M - MEMORY','DB - DATA BLOCK']
 
@@ -17,8 +12,8 @@ formater = logging.Formatter('%(threadName)s - %(asctime)s - %(name)s - %(leveln
 
 console = logging.StreamHandler()
 console.setLevel(logging.WARNING)
-
-file_handler = logging.handlers.RotatingFileHandler('gui.log','a',10000,10)
+os.makedirs(name=os.path.abspath('logs'), exist_ok=True)
+file_handler = logging.handlers.RotatingFileHandler('logs/gui.log','a',100000,10)
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formater)
 
@@ -35,13 +30,12 @@ class Okno(QWidget):
         self.ui.setupUi(self)
         self.ui.cb_address_area.addItems(MEMORY_AREA_LIST)
 
-        # w = Worker('192.168.1.15',2)
         self._worker = Worker('127.0.0.1', 2)
         self._thread = QThread()
         self._worker.moveToThread(self._thread)
 
-        logHandler = QTextEdtitLoggerHandler(self)
-        root_logger.addHandler(logHandler)
+        log_handler = QTextEdtitLoggerHandler(self)
+        root_logger.addHandler(log_handler)
 
         self.ui.le_ip_address.setText('127.0.0.1')
         self.ui.le_ip_port.setText('1099')
@@ -72,7 +66,6 @@ class Okno(QWidget):
             lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
 
         self.ui.btn_clear.clicked.connect(self.ui.te_log.clear)
-        print('Main thread {}'.format(QThread.currentThreadId()))
 
 
     def collect_communication_parameter(self):
@@ -80,14 +73,7 @@ class Okno(QWidget):
 
     def collect_variable_parameter(self):
         index = self.ui.cb_address_area.currentIndex()
-        if index == 0:
-            area = 'I'
-        elif index == 1:
-            area = 'Q'
-        elif index == 2:
-            area = 'M'
-        elif index == 3:
-            area = 'D'
+        area = MEMORY_AREA_LIST[index][0]
 
         if area in ['I','Q','M']:
             data_numb = int(self.ui.le_variable_address.text())

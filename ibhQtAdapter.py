@@ -1,10 +1,7 @@
 import logging
-
-from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QLabel, QPushButton
 import time
-import string
-import threading
 import ibhlinkdriver
 import IBHconst
 from data_plc import BaseData
