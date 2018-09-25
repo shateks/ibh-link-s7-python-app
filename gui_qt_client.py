@@ -34,18 +34,14 @@ class Okno(QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.ui.cb_address_area.addItems(MEMORY_AREA_LIST)
-        # >>>>>>>>>>>>>>>>
-        # w = Worker('192.168.1.15',2)
-        self.w = Worker('127.0.0.1', 2)
-        self.t = QThread()
 
-        self.w.moveToThread(self.t)
-        # t.started.connect(w.startingSlot)
-        # t.finished.connect(lambda: t.deleteLater())
-        # t.finished.connect(killnij)
+        # w = Worker('192.168.1.15',2)
+        self._worker = Worker('127.0.0.1', 2)
+        self._thread = QThread()
+        self._worker.moveToThread(self._thread)
+
         logHandler = QTextEdtitLoggerHandler(self)
         root_logger.addHandler(logHandler)
-        # logging.basicConfig(handlers=(logHandler,file_handler),)
 
         self.ui.le_ip_address.setText('127.0.0.1')
         self.ui.le_ip_port.setText('1099')
@@ -54,43 +50,30 @@ class Okno(QWidget):
         self.ui.le_variable_offset.setText('0')
         self.ui.cb_address_area.setCurrentIndex(3)
 
-        self.w.change_communication_parameters(*self.collect_communication_parameter())
+        self._worker.change_communication_parameters(*self.collect_communication_parameter())
 
-
-        self.t.start()
+        self._thread.start()
 
         self.ui.btn_read.clicked.connect(self.read_bytes)
-        # widget.ui.btn_start.clicked.connect(lambda: w.read_bytes('D',0,100,4))
-        self.w.read_bytes_signal.connect(lambda l: self.ui.te_log.append(str(l)))
+        self._worker.read_bytes_signal.connect(lambda l: self.ui.te_log.append(str(l)))
 
         self.ui.btn_write.clicked.connect(self.write_bytes)
 
-        self.ui.btn_get_plc_status.clicked.connect(lambda: self.w.get_plc_status())
-        self.w.get_plc_status_signal.connect(lambda l: self.ui.te_log.append('PLC is in {} state.'.format(l)))
+        self.ui.btn_get_plc_status.clicked.connect(lambda: self._worker.get_plc_status())
+        self._worker.get_plc_status_signal.connect(lambda l: self.ui.te_log.append('PLC is in {} state.'.format(l)))
 
-        self.w.failure_signal.connect(lambda s: self.ui.te_log.append(s))
+        self._worker.failure_signal.connect(lambda s: self.ui.te_log.append(s))
 
         self.ui.le_ip_address.editingFinished.connect(
-            lambda: self.w.change_communication_parameters(*self.collect_communication_parameter()))
+            lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
         self.ui.le_ip_port.editingFinished.connect(
-            lambda: self.w.change_communication_parameters(*self.collect_communication_parameter()))
+            lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
         self.ui.le_mpi_address.editingFinished.connect(
-            lambda: self.w.change_communication_parameters(*self.collect_communication_parameter()))
+            lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
 
         self.ui.btn_clear.clicked.connect(self.ui.te_log.clear)
         print('Main thread {}'.format(QThread.currentThreadId()))
 
-    #     <<<<<<<<<<<<<<<<<<<<<<
-
-    # @pyqtSlot()
-    # def read_operation(self):
-    #     self.ip_address, self.ip_port, self.mpi_address = self.collect_communication_parameter()
-    #
-    #     self.ui.te_log.setText(self.ip_address)
-
-    # @pyqtSlot()
-    # def get_plc_state(self):
-    #     pass
 
     def collect_communication_parameter(self):
         return (self.ui.le_ip_address.text(), int(self.ui.le_ip_port.text()), int(self.ui.le_mpi_address.text()))
@@ -120,7 +103,7 @@ class Okno(QWidget):
     def read_bytes(self):
         try:
             (area, data_numb, db_numb, size) = self.collect_variable_parameter()
-            self.w.read_bytes(area, data_numb, db_numb, size)
+            self._worker.read_bytes(area, data_numb, db_numb, size)
         except ValueError as e:
             self.log_error(str(e))
 
@@ -128,7 +111,7 @@ class Okno(QWidget):
         try:
             (area, data_numb, db_numb, size) = self.collect_variable_parameter()
             val = int(self.ui.le_variable_value.text())
-            self.w.write_bytes(area, data_numb, db_numb, size, val)
+            self._worker.write_bytes(area, data_numb, db_numb, size, val)
         except ValueError as e:
             self.log_error(str(e))
 
