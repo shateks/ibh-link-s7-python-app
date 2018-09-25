@@ -26,7 +26,7 @@
      <item>
       <widget class="QLineEdit" name="leIpAddress">
        <property name="inputMask">
-        <string>ddd.ddd.ddd.ddd; </string>
+        <string>000.000.000.000; </string>
        </property>
       </widget>
      </item>
@@ -53,7 +53,7 @@
      <item>
       <widget class="QLineEdit" name="lePort">
        <property name="inputMask">
-        <string>ddddd; </string>
+        <string>00000; </string>
        </property>
       </widget>
      </item>
@@ -80,7 +80,7 @@
      <item>
       <widget class="QLineEdit" name="leMpiAddress">
        <property name="inputMask">
-        <string>ddd; </string>
+        <string>000; </string>
        </property>
       </widget>
      </item>
@@ -126,6 +126,13 @@
       <widget class="QCheckBox" name="ckb1">
        <property name="text">
         <string>CheckBox</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>PushButton</string>
        </property>
       </widget>
      </item>
