@@ -1,64 +1,67 @@
-from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal
-import IBHconst
-from ibhLinkServer import IbhLinkServer
+from typing import Iterable
+
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, Qt, QModelIndex, QAbstractItemModel
+from PyQt5.Qt import QVariant
+from ibhLinkServer import IbhLinkServer, IbhDataCollection, EventType
+from IbhLinkServerModel import Model
+
+class ___model(QAbstractItemModel):
+
+    pass
 
 
 class Worker(QObject):
 
-    def __init__(self, parent=None):
+    def __init__(self,connector=None, model: Model=None, parent=None):
         super().__init__(parent)
-        self._server = IbhLinkServer
+        self._server = None
+        self._connector = connector
+        self._model = model
 
     @pyqtSlot()
-    def start(self, ip_address: str, ip_port: int, mpi_address: int):
-        self._server.__init__(ip_address, ip_port, mpi_address)
-        self._server.startServer()
+    def start(self, ip_address: str, ip_port: int, mpi_address: int, collection: IbhDataCollection):
+        self._server = IbhLinkServer(ip_address, ip_port, mpi_address, collection, self._connector)
+        self._server.start()
+        self.started.emit()
 
     @pyqtSlot()
     def stop(self):
-        self._server.stopListen()
+        self._server.stop()
+        self._server.join()
+        self.stoped.emit()
+
+    @pyqtSlot(tuple)
+    def item_added(self, tup):
+    # def item_added(self, type: EventType, area: str):
+        """
+        Only purpose of slot is redirect signal from QtNotifier, signal is emitted when item is added to
+        collection of data (IbhDataCollection).
+        :param type: type of event added or changed
+        :param area: memory area D,M,I or Q
+        :return:
+        """
+
+        type, area = tup
+        root = QModelIndex()
+        if type == EventType.added:
+            count = self._model.rowCount(QModelIndex())
+            for row in range(count):
+                index = self._model.index(row,0,root)
+                if self._model.data(index, Qt.DisplayRole) == area:
+                    self._model.rowsInserted.emit(index,0,0)
+                    break
+        elif type == EventType.changed:
+            count = self._model.rowCount(QModelIndex())
+            for row in range(count):
+                index = self._model.index(row, 0, root)
+                if self._model.data(index, Qt.DisplayRole) == area:
+                    count2 = index.internalPointer().childCount()
+                    index2 = self._model.index(count2-1,2,index)
+                    self._dataChanged.emit(index2, index2)
 
 
-import socket
-import threading
 
-class ThreadedServer(object):
-    def __init__(self, host, port):
-        self.host = host
-        self.port = port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind((self.host, self.port))
-
-    def listen(self):
-        self.sock.listen(5)
-        while True:
-            client, address = self.sock.accept()
-            client.settimeout(60)
-            threading.Thread(target = self.listenToClient,args = (client,address)).start()
-
-    def listenToClient(self, client, address):
-        size = 1024
-        while True:
-            try:
-                data = client.recv(size)
-                if data:
-                    # Set the response to echo back the recieved data
-                    response = data
-                    client.send(response)
-                else:
-                    raise error('Client disconnected')
-            except:
-                client.close()
-                return False
-
-if __name__ == "__main__":
-    while True:
-        port_num = input("Port? ")
-        try:
-            port_num = int(port_num)
-            break
-        except ValueError:
-            pass
-
-    ThreadedServer('',port_num).listen()
+    started = pyqtSignal()
+    stoped = pyqtSignal()
+    _dataChanged = pyqtSignal(QModelIndex,QModelIndex)
+    collection_modified = pyqtSignal(str)

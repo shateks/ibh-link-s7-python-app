@@ -4,9 +4,14 @@ import threading
 import ctypes
 import time
 import data_plc
-
+from safe_connector import SafeConnector
 import IBHconst
 from IbhServerData import IbhDataCollection, data_item
+from enum import Enum
+
+class EventType(Enum):
+    added = 1
+    changed = 2
 
 class ToShortSendReceiveTelegramError(Exception):
     pass
@@ -21,12 +26,13 @@ class FaultsInTelegramError(Exception):
 
 
 class IbhLinkServer(threading.Thread):
-    def __init__(self, ip_addr, ip_port, mpi_addr, collection: IbhDataCollection):
+    def __init__(self, ip_addr, ip_port, mpi_addr, collection: IbhDataCollection, connector: SafeConnector = None):
         super().__init__(daemon=True)
         self.connected = False
         self.ip_address = ip_addr
         self.ip_port = ip_port
         self.collection = collection
+        self.connector = connector
         if mpi_addr < 0 or mpi_addr > 126:
             raise ValueError("mpi_addr < 0 or mpi_addr > 126")
         self.plc_status = IBHconst.OP_STATUS_STOP
@@ -34,7 +40,7 @@ class IbhLinkServer(threading.Thread):
         self.msg_number = 0
         self.max_recv_bytes = 512
         self.abort = threading.Event()
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def start(self):
         self.abort.clear()
@@ -44,32 +50,59 @@ class IbhLinkServer(threading.Thread):
         self.abort.set()
 
     def run(self):
-        try:
-            self.s.bind((self.ip_address, self.ip_port))
-            # self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            # s.settimeout()
-            self.s.listen(1)
-            while True:
-                while not self.abort.is_set():
-                    try:
-                        print('Try to accept')
-                        conn, addr = self.s.accept()
-                        print('Connected by', addr)
-                        threading.Thread(target=self.clientHandler, args=(conn, addr, self.abort)).start()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind((self.ip_address, self.ip_port))
+            s.settimeout(1.0)
+            s.listen(1)
+            while not self.abort.is_set():
+                try:
+                    # TODO: add timeout option, because "self.abort.is_set()" will never be checked
+                    print('Try to accept')
+                    conn, addr = s.accept()
+                    print('Connected by', addr)
+                    threading.Thread(target=self.clientHandler, args=(conn, addr, self.abort)).start()
+                except socket.timeout:
+                    pass
 
 
-                    except socket.timeout:
-                        pass
+
+        # # try:
+        #     self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #     self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #     self.s.bind((self.ip_address, self.ip_port))
+        #     self.s.settimeout(1.0)
+        #     self.s.listen(1)
+        #     while True:
+        #         while not self.abort.is_set():
+        #             try:
+        #                 # TODO: add timeout option, because "self.abort.is_set()" will never be checked
+        #                 print('Try to accept')
+        #                 conn, addr = self.s.accept()
+        #                 print('Connected by', addr)
+        #                 threading.Thread(target=self.clientHandler, args=(conn, addr, self.abort)).start()
+        #             except socket.timeout:
+        #                 pass
+        #         # TODO: Have to add a wait condition for all threads(clientHandlers) to finish
+        #
+        # except Exception as e:
+        #     # conn.shutdown(socket.SHUT_RDWR)
+        #     print('Exiting from startServer')
+        #     self.drop_server()
+        #     # self.s.shutdown(socket.SHUT_RDWR)
+        #     # self.s.close()
+        #     # print(e.with_traceback())
 
 
-        except Exception as e:
-            # conn.shutdown(socket.SHUT_RDWR)
-            self.s.close()
-            print(e.with_traceback())
-            print('Exiting from startServer')
-
+    # def drop_server(self):
+    #     if not self.s._closed:
+    #         self.s.shutdown(socket.SHUT_RDWR)
+    #         self.s.close()
+    #         self.connected = False
+    #         self.s = None
 
     def clientHandler(self, conn: socket.socket, address, stop_event: threading.Event):
+        print("clientHandler")
         disconnect = threading.Event()
         while not stop_event.is_set() and not disconnect.is_set():
             try:
@@ -81,18 +114,10 @@ class IbhLinkServer(threading.Thread):
                 else:
                     raise Exception('Client disconnected')
             except Exception as e:
-                # conn.shutdown(socket.SHUT_RDWR)
                 disconnect.set()
                 conn.shutdown(socket.SHUT_RDWR)
                 conn.close()
-                # print(e.with_traceback())
-                # return False
         conn.close()
-
-    def stopListen(self):
-        pass
-
-
 
     def disconnect_plc(self):
         if not self.connected:
@@ -132,6 +157,7 @@ class IbhLinkServer(threading.Thread):
     def set_plc_status(self, val):
         self.plc_status = val
 
+
     def produce_respose(self, data:bytes, disconnect:threading.Event) -> bytes:
         msg_rx = IBHconst.IBHLinkMSG()
         msg_rx.receiveSome(data)
@@ -153,7 +179,7 @@ class IbhLinkServer(threading.Thread):
         msg_tx.func_code = msg_rx.func_code
         # msg_tx.data_type = IBHconst.TASK_TDT_UINT8 | IBHconst.TASK_TDT_UINT16
         # msg_tx.func_code = IBHconst.TASK_TFC_READ | IBHconst.TASK_TFC_WRITE
-        # msg_tx.d =
+        # msg_tx.d = ?
 
         error = self.basic_telegram_check(msg_rx)
         if error:
@@ -233,10 +259,20 @@ class IbhLinkServer(threading.Thread):
             val = list(array[:size])
             if area == 'D':
                 for i in range(size):
-                    self.collection.set(data_item(area, data_address, db_offset + i), val[i])
+                    _item = data_item(area, data_address, db_offset + i)
+                    _exist = self.collection.is_in_collection(_item)
+                    self.collection.set(_item, val[i])
             else:
                 for i in range(size):
+                    _item = data_item(area, data_address + i, 0)
+                    _exist = self.collection.is_in_collection(_item)
                     self.collection.set(data_item(area, data_address + i, 0), val[i])
+
+            if self.connector and not _exist:
+                self.connector.emit(EventType.added, area)
+            elif self.connector and _exist:
+                self.connector.emit(EventType.changed, area)
+
             msg.ln = IBHconst.TELE_HEADER_SIZE
         except ValueError:
             msg.ln = IBHconst.TELE_HEADER_SIZE

@@ -6,7 +6,7 @@ from queue import Queue
 
 class SafeConnector(QtCore.QObject):
 
-    signal = QtCore.pyqtSignal(object)
+    signal = QtCore.pyqtSignal(tuple)
 
     def __init__(self, parent=None):
         # initialise in Qt thread
@@ -22,12 +22,10 @@ class SafeConnector(QtCore.QObject):
         self.rsock.recv(1)
         self.signal.emit(self._queue.get())
 
-    def input(self, msg):
+    def emit(self, *args):
         # runs in any thread
-        self._queue.put(msg)
+        self._queue.put(args)
         self.wsock.send(b'1')
-
-
 
 if __name__ == '__main__':
 
@@ -43,7 +41,7 @@ if __name__ == '__main__':
 
         def emit_signal(self):
             # self.connector.emit(QtCore.pyqtSignal(str,name='sig'), str(time.time()))
-            self.connector.input(str(time.strftime('%H:%M:%S%')) + str(time.process_time()))
+            self.connector.emit(str(time.strftime('%H:%M:%S%')) + str(time.process_time()))
 
         def run(self):
             while True:

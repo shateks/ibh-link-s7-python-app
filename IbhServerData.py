@@ -12,7 +12,7 @@ class BaseItem():
             self._parent.appendChild(self)
 
     def appendChild(self, child):
-        self._child_dict[child.name()]=child
+        self._child_dict[child.name()] = child
 
     def parent(self):
         return self._parent

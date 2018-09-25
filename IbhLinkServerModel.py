@@ -39,7 +39,7 @@ class Model(QtCore.QAbstractItemModel):
             logic_sum |= QtCore.Qt.ItemIsEditable
         return logic_sum
 
-    def index(self, row, col, parent=None, *args, **kwargs):
+    def index(self, row, col, parent=QModelIndex(), *args, **kwargs):
         if not parent.isValid():
             parent_ref = self._root
         else:
@@ -50,6 +50,12 @@ class Model(QtCore.QAbstractItemModel):
             return self.createIndex(row, col, child_item)
         else:
             return QtCore.QModelIndex()
+
+    def hasChildren(self, parent=None, *args, **kwargs):
+        if parent.isValid():
+            return self.rowCount(parent)
+        else:
+            return super().hasChildren(parent)
 
     def rowCount(self, parent=None, *args, **kwargs):
         """
@@ -124,7 +130,8 @@ class ChangeByteDelegate(QItemDelegate):
         return line_edit
 
     def setEditorData(self, editor, index):
-        value = index.internalPointer().value
+        # value = index.internalPointer().value
+        value = index.data()
         editor.setText(str(value))
 
     def setModelData(self, editor: QLineEdit, model: QAbstractItemModel, index: QModelIndex):
