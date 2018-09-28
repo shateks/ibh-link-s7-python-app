@@ -28,15 +28,15 @@ class PlcVariableParser:
     def __init__(self):
         _data_area_finder_expresion = r"^([A-Z]{1,3})([\d]{1,4})"
         _bit_type_address_expresion = r"(?<=\.)[0-7]"
-        _data_block_address_expresion = r"((?<=\.)DB[BWDX])(\d{1,5})"
+        _data_block_offset_expresion = r"((?<=\.)DB[BWDX])(\d{1,5})"
         _data_type_expresion = r"BOOL|BYTE|SINT|WORD|INT|DWORD|DINT|REAL"
         self._data_area_re = re.compile(_data_area_finder_expresion)
         self._bit_type_address_re = re.compile(_bit_type_address_expresion)
-        self._data_block_address_re = re.compile(_data_block_address_expresion)
+        self._data_block_offset_re = re.compile(_data_block_offset_expresion)
         self._data_type_re = re.compile(_data_type_expresion)
 
         self.area = None
-        self.db_nr = None
+        self.offset = None
         self.address = None
         self.bit_nr = None
         self.data_type = None
@@ -100,16 +100,16 @@ class PlcVariableParser:
 
         elif self.area == 'DB':
             self.area = 'D'
-            self.db_nr = int(data_area_match.group(2))
+            self.address = int(data_area_match.group(2))
             val = val[data_area_match.end(0):]
-            data_block_address_match = self._data_block_address_re.search(val)
+            data_block_address_match = self._data_block_offset_re.search(val)
             if data_block_address_match is None:
                 raise ValueError('No valid S7 address:{}'.format(str_val))
 
             char = data_block_address_match.group(1)[2]
 
             if char == 'X':
-                self.address = int(data_block_address_match.group(2))
+                self.offset = int(data_block_address_match.group(2))
                 val = val[data_area_match.end(2):]
                 bit_match = self._bit_type_address_re.search(val)
                 if bit_match is None:
@@ -117,7 +117,7 @@ class PlcVariableParser:
                 self.bit_nr = int(bit_match.group(0))
                 self.data_type = 'BOOL'
             else:
-                self.address = int(data_block_address_match.group(2))
+                self.offset = int(data_block_address_match.group(2))
                 val = val[data_block_address_match.end(0):]
                 data_type_match = self._data_type_re.match(val)
 
@@ -150,7 +150,7 @@ class PlcVariableParser:
         elif self.area == 'A':
             self.area = 'Q'
 
-        return (self.area, self.db_nr, self.address, self.bit_nr, self.data_type)
+        return (self.area, self.address, self.offset, self.bit_nr, self.data_type)
 
 
 class ConfReader:

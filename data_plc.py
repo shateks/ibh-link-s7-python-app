@@ -1,5 +1,5 @@
 import struct
-
+from collections import namedtuple
 
 def _from_plc_bit_(list_of_bytes, bit_nr):
     val = list_of_bytes[0]
@@ -75,14 +75,18 @@ def _to_plc_real_(val):
     """
     return struct.pack(">f", val)
 
+
+variable_address = namedtuple('variable_address', ['area', 'address', 'offset', 'bit_number'])
+
+
 class BaseData:
     """
     Helper class for converting variables between PLC and PC, byteorder and data types.
 
     """
-    def __init__(self, area, db_number, address, bit_nr, data_type):
+    def __init__(self, area, address, offset, bit_nr, data_type):
         self._area=area
-        self._db_number=db_number
+        self._offset=offset
         self._address=address
         self._bit_nr=bit_nr
         self._data_type=data_type
@@ -120,15 +124,19 @@ class BaseData:
             self._plc_to_visu_conv = _from_plc_real_
             self._visu_to_plc_conv = _to_plc_real_
 
-        self._occupied_bytes = [x for x in range(self._address, self._address + self._size)]
+        if self._area == 'D':
+            self._occupied_bytes = [x for x in range(self._offset, self._offset + self._size)]
+        else:
+            self._occupied_bytes = [x for x in range(self._address, self._address + self._size)]
+
 
     @property
     def area(self):
         return self._area
 
     @property
-    def db_number(self):
-        return self._db_number
+    def address(self):
+        return self._address
 
     @property
     def occupied_bytes(self):

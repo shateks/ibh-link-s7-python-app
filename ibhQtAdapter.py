@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import QLabel, QPushButton
 import time
 import ibhlinkdriver
 import IBHconst
-from data_plc import BaseData
-from collections import namedtuple
+from data_plc import BaseData, variable_address
+from collections import namedtuple, deque
 from enum import Enum
 """
 Requirements:
@@ -30,6 +30,22 @@ logger = logging.getLogger(__name__)
 class Status(Enum):
     ready = 1
     busy = 2
+
+
+read_deque = deque()
+"""
+collection of elements (data_plc.variable_address,size)
+"""
+
+result_read_deque = deque()
+"""
+collection of elements (data_plc.variable_address,list(int))
+"""
+
+write_deque = deque()
+result_write_deque = deque()
+
+
 
 class Manager(QObject):
     """
@@ -111,10 +127,10 @@ class Manager(QObject):
 
     def populate_bytes_readout(self, data):
         if data.area == 'D':
-            if not data.db_number in self.bytes_for_readout['D'].keys():
-                self.bytes_for_readout['D'][data.db_number] = {}
+            if not data.address in self.bytes_for_readout['D'].keys():
+                self.bytes_for_readout['D'][data.address] = {}
             for byte_address in data.occupied_bytes:
-                self.bytes_for_readout['D'][data.db_number][byte_address] = None
+                self.bytes_for_readout['D'][data.address][byte_address] = None
         else:
             for byte_address in data.occupied_bytes:
                 self.bytes_for_readout[data.area][byte_address] = None
@@ -161,6 +177,9 @@ class Manager(QObject):
     def worker_status_receiver(self):
         pass
 
+
+
+
 class Worker(QObject):
     """
     The class wrapping ibhlinkdriver in a QObject type object that can be moved to a thread and used
@@ -200,34 +219,35 @@ class Worker(QObject):
         self._stay_connected = bool(val)
 
     @pyqtSlot(str, int, int, int)
-    def read_bytes(self, data_type, data_number, db_number, size):
+    def read_bytes(self, data_type, data_address, offset, size) -> list:
         """
         :param data_type: string - M, E or I, A or Q, D
-        :param data_number: int - number of data
-        :param db_number: int - in case of type 'D' number of DB block
+        :param data_address: int - number of data
+        :param offset: int - in case of type 'D' number of DB block
         :param size: int - number of bytes to read beginning from target 'data_number'
+        :return: list - list of bytes TODO: check return type
         """
+        vals = []
         try:
             if not self._driver.connected:
                 self._driver.connect_plc()
 
             if self._driver.connected:
-                vals = self._driver.read_vals(data_type, data_number, db_number, size)
+                vals = self._driver.read_vals(data_type, data_address, offset, size)
                 self.read_bytes_signal.emit(vals)
-                self._driver.disconnect_plc()
         except ibhlinkdriver.DriverError as e:
             logger.warning(str(e))
         finally:
             if not self.stay_connected:
                 self._driver.disconnect_plc()
-
+        return vals
 
     @pyqtSlot(str, int, int, int, int)
-    def write_bytes(self, data_type, data_number, db_number, size, val):
+    def write_bytes(self, data_type, data_address, offset, size, val):
         """
         :param data_type: string - M, E or I, A or Q, D
-        :param data_number: int - number of data
-        :param db_number: int - in case of type 'D' number of DB block
+        :param data_address: int - number of data
+        :param offset: int - in case of type 'D' number of DB block
         :param size: int - number of bytes to read beginning from target 'data_number'
         :param val: int - value to be writen
         """
@@ -237,9 +257,8 @@ class Worker(QObject):
 
             if self._driver.connected:
                 b_vals = val.to_bytes(max((val.bit_length() + 7) // 8, 1), byteorder='big')
-                self._driver.write_vals(data_type, data_number, db_number, size, b_vals)
+                self._driver.write_vals(data_type, data_address, offset, size, b_vals)
                 self.write_bytes_signal.emit()
-                self._driver.disconnect_plc()
         except ibhlinkdriver.DriverError as e:
             logger.warning(str(e))
         finally:
@@ -263,6 +282,25 @@ class Worker(QObject):
         finally:
             if not self.stay_connected:
                 self._driver.drop_connection()
+
+    @pyqtSlot()
+    def queued_read_out(self):
+        while True:
+            try:
+                elements = read_deque.popleft()
+                vals = self.read_bytes(elements)
+               konsumuj vals
+
+
+            except IndexError:
+                break
+
+
+
+    @pyqtSlot()
+    def queued_write_in(self):
+        pass
+
     # TODO: slot for writing list<int>
 
     # TODO: slot for reading any bit in byte

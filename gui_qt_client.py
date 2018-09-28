@@ -22,7 +22,7 @@ logging.basicConfig(format=FORMAT,handlers=(console,file_handler))
 root_logger = logging.getLogger('')
 root_logger.setLevel(logging.DEBUG)
 
-class Okno(QWidget):
+class MainWindow(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -76,28 +76,28 @@ class Okno(QWidget):
         area = MEMORY_AREA_LIST[index][0]
 
         if area in ['I','Q','M']:
-            data_numb = int(self.ui.le_variable_address.text())
-            db_numb = 0
+            address = int(self.ui.le_variable_address.text())
+            offset = 0
             size = int(self.ui.sb_variable_bytes_count.text())
         elif area == 'D':
-            db_numb = int(self.ui.le_variable_address.text())
-            data_numb = int(self.ui.le_variable_offset.text())
+            address = int(self.ui.le_variable_address.text())
+            offset = int(self.ui.le_variable_offset.text())
             size = int(self.ui.sb_variable_bytes_count.text())
 
-        return (area, data_numb, db_numb, size)
+        return (area, address, offset, size)
 
     def read_bytes(self):
         try:
-            (area, data_numb, db_numb, size) = self.collect_variable_parameter()
-            self._worker.read_bytes(area, data_numb, db_numb, size)
+            (area, address, offset, size) = self.collect_variable_parameter()
+            self._worker.read_bytes(area, address, offset, size)
         except ValueError as e:
             self.log_error(str(e))
 
     def write_bytes(self):
         try:
-            (area, data_numb, db_numb, size) = self.collect_variable_parameter()
+            (area, address, offset, size) = self.collect_variable_parameter()
             val = int(self.ui.le_variable_value.text())
-            self._worker.write_bytes(area, data_numb, db_numb, size, val)
+            self._worker.write_bytes(area, address, offset, size, val)
         except ValueError as e:
             self.log_error(str(e))
 
@@ -110,7 +110,7 @@ class Okno(QWidget):
 
 class QTextEdtitLoggerHandler(logging.Handler):
 
-    def __init__(self, widget: Okno):
+    def __init__(self, widget: MainWindow):
         super().__init__()
         self.setLevel(logging.INFO)
         self.widget = widget
@@ -124,7 +124,7 @@ if (__name__ == '__main__' ):
 
 
     app = QApplication(sys.argv)
-    widget = Okno()
+    widget = MainWindow()
     widget.show()
 
     app.exec()

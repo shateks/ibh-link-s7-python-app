@@ -85,7 +85,7 @@ class TestIbhlinkdriver(TestCase):
         self._instance_socket_class.recv.return_value = expected_bytes
         self._instance_socket_class.send.return_value = len(sent_bytes)
         self.driver.connect_plc()
-        self.driver.write_vals(data_type='M', data_number=10, db_number=0, size=1, vals=bytes([var]))
+        self.driver.write_vals(data_type='M', data_address=10, offset=0, size=1, vals=bytes([var]))
         # try:
         #     raise Exception("Moje Exception")
         # except Exception as e:

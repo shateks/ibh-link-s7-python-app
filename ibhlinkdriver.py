@@ -4,14 +4,7 @@ import ctypes
 import IBHconst
 
 logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
-# fh = logging.FileHandler('gui.log')
-# fh.setLevel(logging.DEBUG)
-# formatter = logging.Formatter('%(relativeCreated)6d %(threadName)s: %(message)s')
-# fh.setFormatter(formatter)
-# logger.addHandler(fh)
-#
-# logger.debug("Hallo")
+
 
 class DriverError(Exception):
     pass
@@ -27,6 +20,7 @@ class FaultsInTelegramError(DriverError):
 
 class SocketUnexpectedDisconnected(DriverError):
     pass
+
 
 class ibhlinkdriver:
     def __init__(self, ip_addr, ip_port, mpi_addr):
@@ -105,23 +99,23 @@ class ibhlinkdriver:
         else:
             return 'UNKNOWN'
 
-    def read_vals(self, data_type, data_number, db_number, size):
-        logger.debug('Reading vals:{}, address {}, db {}, size {}'.format(data_type,data_number,db_number,size))
+    def read_vals(self, data_type, data_address, offset, size):
+        logger.debug('Reading vals:{}, address {}, offset {}, size {}'.format(data_type, data_address, offset, size))
         if size > IBHconst.IBHLINK_READ_MAX or size <= 0:
             print("if size > IBHconst.IBHLINK_READ_MAX or size <= 0:")
             return None
         elif data_type == 'E' or data_type == 'I':
-            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.INPUT_AREA, data_adr=data_number,
+            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.INPUT_AREA, data_adr=data_address,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'A' or data_type == 'O' or data_type == 'Q':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.OUTPUT_AREA,
-                                         data_adr=data_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+                                         data_adr=data_address, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'M':
-            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_M, data_area=IBHconst.INPUT_AREA, data_adr=data_number,
+            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_M, data_adr=data_address,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif data_type == 'D':
-            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_DB, data_area=data_number >> 8, data_idx=data_number,
-                                         data_adr=db_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_DB, data_area=offset >> 8, data_idx=offset,
+                                         data_adr=data_address, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif size > IBHconst.IBHLINK_READ_MAX / 2:
             print("size > IBHconst.IBHLINK_READ_MAX/2")
             return None
@@ -162,7 +156,7 @@ class ibhlinkdriver:
         else:
             return None
 
-    def write_vals(self, data_type, data_number, db_number, size, vals):
+    def write_vals(self, data_type, data_address, offset, size, vals):
         # TODO: implementacja write
         if not type(vals) is bytes:
             raise TypeError("Given 'vals' of type {}, use bytes object".format(type(vals)))
@@ -175,23 +169,23 @@ class ibhlinkdriver:
             return None
         elif data_type == 'E' or data_type == 'I':
             msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_IO,
-                                         data_area=IBHconst.INPUT_AREA, data_adr=data_number,
+                                         data_area=IBHconst.INPUT_AREA, data_adr=data_address,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
         elif data_type == 'A' or data_type == 'O' or data_type == 'Q':
             msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_IO,
-                                         data_area=IBHconst.OUTPUT_AREA, data_adr=data_number,
+                                         data_area=IBHconst.OUTPUT_AREA, data_adr=data_address,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
         elif data_type == 'M':
             msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_M,
-                                         data_adr=data_number,
+                                         data_adr=data_address,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
         elif data_type == 'D':
             msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_DB,
-                                         data_area=data_number >> 8, data_idx=data_number,
-                                         data_adr=db_number, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+                                         data_area=offset >> 8, data_idx=offset,
+                                         data_adr=data_address, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
         elif size > IBHconst.IBHLINK_WRITE_MAX / 2:
             logger.warning("size > IBHconst.IBHLINK_WRITE_MAX/2")
@@ -398,8 +392,7 @@ if __name__ == "__main__":
     # driver = ibhlinkdriver('127.0.0.1', 1099, 2)
     driver.connect_plc()
     print("connected {}".format(driver.connected))
-    # print(driver.plc_get_run())
-    # print(driver.read_vals('M',10,10,1))
-    print(driver.read_vals('D', 0, 100, 1))
-    # print(driver.plc_get_run())
+
+    print(driver.read_vals('D', 100, 0, 1))
+
     driver.disconnect_plc()
