@@ -78,43 +78,43 @@ class IbhLinkServer(threading.Thread):
                 conn.close()
         conn.close()
 
-    def disconnect_plc(self):
-        if not self.connected:
-            return
-
-        msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
-                                     ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_DISCONNECT,
-                                     device_adr=self.mpi_address)
-        self.msg_number += 1
-
-        msg_length = IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE
-
-        self.sendData(bytes(msg_tx)[:msg_length])
-
-        raw_bytes = self.receiveData()
-
-        msg_rx = IBHconst.IBHLinkMSG()
-        msg_rx.receiveSome(raw_bytes)
-
-        self.basic_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
-
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()
-        self.connected = False
-
-    @property
-    def str_plc_status(self) -> str:
-        if self.plc_status == 0:
-            return 'STOP'
-        elif self.plc_status == 1:
-            return 'START'
-        elif self.plc_status == 2:
-            return 'RUN'
-        else:
-            return 'UNKNOWN'
-
-    def set_plc_status(self, val):
-        self.plc_status = val
+    # def disconnect_plc(self):
+    #     if not self.connected:
+    #         return
+    #
+    #     msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
+    #                                  ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_DISCONNECT,
+    #                                  device_adr=self.mpi_address)
+    #     self.msg_number += 1
+    #
+    #     msg_length = IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE
+    #
+    #     self.sendData(bytes(msg_tx)[:msg_length])
+    #
+    #     raw_bytes = self.receiveData()
+    #
+    #     msg_rx = IBHconst.IBHLinkMSG()
+    #     msg_rx.receiveSome(raw_bytes)
+    #
+    #     self.basic_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
+    #
+    #     self._socket.shutdown(socket.SHUT_RDWR)
+    #     self._socket.close()
+    #     self.connected = False
+    #
+    # @property
+    # def str_plc_status(self) -> str:
+    #     if self.plc_status == 0:
+    #         return 'STOP'
+    #     elif self.plc_status == 1:
+    #         return 'START'
+    #     elif self.plc_status == 2:
+    #         return 'RUN'
+    #     else:
+    #         return 'UNKNOWN'
+    #
+    # def set_plc_status(self, val):
+    #     self.plc_status = val
 
 
     def produce_respose(self, data:bytes, disconnect:threading.Event) -> bytes:
