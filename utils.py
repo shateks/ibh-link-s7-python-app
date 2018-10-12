@@ -1,8 +1,11 @@
 import configparser
 import re
 from PyQt5.QtWidgets import QWidget
+from data_plc import visu_variable, variable_range, DataType, Action, variable_full_description, DEFAULT_RANGE
+import data_plc
+from collections import namedtuple
 
-SUPPORTED_WIDGETS = ['QPushButton','QLabel']
+SUPPORTED_WIDGETS = ['QPushButton','QLabel', 'QSlider', 'QDial', 'QProgressBar', 'QLineEdit']
 # SUPPORTED_WIDGETS = ['QRadioButton','QPushButton','QLabel','QLineEdit','QCheckBox']
 
 """
@@ -15,11 +18,23 @@ QPushButton - can be for writing only (checkable=false), and
     signal: clicked(bool checked = false) "If the button is checkable, checked is true
                             if the button is checked, or false if the button is unchecked."
 """
+
+
+
 def find_supported_widgets(widget):
     w_list = widget.findChildren(QWidget)
     for w in w_list:
         if w.metaObject().className() in SUPPORTED_WIDGETS:
             yield w
+
+def recursive_dict_fromkeys(recursive_dict: dict) -> dict:
+    result = dict()
+    for k,v in recursive_dict.items():
+        if type(v) is dict:
+            result[k] = recursive_dict_fromkeys(v)
+        else:
+            result[k] = None
+    return result
 
 class PlcVariableParser:
     """
@@ -30,16 +45,95 @@ class PlcVariableParser:
         _bit_type_address_expresion = r"(?<=\.)[0-7]"
         _data_block_offset_expresion = r"((?<=\.)DB[BWDX])(\d{1,5})"
         _data_type_expresion = r"BOOL|BYTE|SINT|WORD|INT|DWORD|DINT|REAL"
+        _bit_action_type = r"(?<![EN])[RST](?![EIO])|(?<![EN])SET|RESET|TOGGLE"
+        _range_expresion = r"(RANGE)\(([\d\-\+\.]+),([\d\+\.]+)\)"
         self._data_area_re = re.compile(_data_area_finder_expresion)
         self._bit_type_address_re = re.compile(_bit_type_address_expresion)
         self._data_block_offset_re = re.compile(_data_block_offset_expresion)
         self._data_type_re = re.compile(_data_type_expresion)
+        self._bit_action_re = re.compile(_bit_action_type)
+        self._range_re = re.compile(_range_expresion)
+        
+    def find_bit_action(self, val):
+        action = self._bit_action_re.search(val)
+        if action is not None:
+            char = action.group(0)[0]
+            if char == 'S':
+                return Action.SET
+            elif char == 'R':
+                return Action.RESET
+            elif char == 'T':
+                return Action.TOGGLE
+        return None
 
-        self.area = None
-        self.offset = None
-        self.address = None
-        self.bit_nr = None
-        self.data_type = None
+    def find_wirte_action(self, val):
+        if 'WRITE' in val:
+            return Action.WRITE
+        else:
+            return None
+
+    def cut_string(self, text, begin, end):
+        _text_len = len(text)
+        if _text_len < 1 or begin > end or end > _text_len - 1:
+            return text
+        else:
+            return text[:begin] + text[end:-1]
+
+    def convert_str_to_data_type(self, val:str) -> DataType:
+        if val == 'BOOL':
+            return DataType.BOOL
+        elif val == 'BYTE':
+            return DataType.BYTE
+        elif val == 'SINT':
+            return DataType.SINT
+        elif val == 'WORD':
+            return DataType.WORD
+        elif val == 'INT':
+            return DataType.INT
+        elif val == 'DWORD':
+            return DataType.DWORD
+        elif val == 'DINT':
+            return DataType.DINT
+        elif val == 'REAL':
+            return DataType.REAL
+        return None
+
+    def values_in_range(self, val_1, val_2, range_1, range_2):
+        if range_1 > range_2:
+            (range_1, range_2) = (range_2, range_1)
+        if val_1 < range_1 or val_1 > range_2:
+            return False
+        if val_2 < range_1 or val_2 > range_2:
+            return False
+        return True
+
+    def analyze_range(self, re_result, var_type: DataType):
+        '''
+        Method is trying to find variable range description like: 'RANGE(-20,500)'
+        Can raise: ValueError
+        :param re_result: re.Match
+        :param var_type: DataType
+        :return: variable_range
+        '''
+        result_first = None
+        result_second = None
+        if re_result is not None:
+            if re_result.group(1) == 'RANGE':
+                first = re_result.group(2)
+                second = re_result.group(3)
+                if var_type == DataType.REAL:
+                    result_first = float(first)
+                    result_second = float(second)
+                elif var_type in (DataType.BYTE, DataType.SINT, DataType.WORD, DataType.INT, DataType.DWORD, DataType.DINT):
+                    result_first = int(first)
+                    result_second = int(second)
+                if not self.values_in_range(result_first, result_second, *DEFAULT_RANGE[var_type]):
+                    raise ValueError('Not valid range values: {} {}'.format(first, second))
+            if result_first > result_second:
+                (result_first, result_second) = (result_second, result_first)
+        else:
+                result_first, result_second = DEFAULT_RANGE[var_type]
+        return variable_range(result_first, result_second)
 
     def parse(self, str_val):
         """
@@ -47,110 +141,123 @@ class PlcVariableParser:
         :param val:
         :return: tuple(area,db_number,address,bit_nr,data_type)
         """
-        val = str_val
-        val = val.strip().upper()
+        area = None
+        offset = None
+        address = None
+        bit_number = None
+        data_type = None
+        action_type = None
+        var_range = None
+        val = str_val.strip().upper()
         val = val.replace(" ", "")
+        result_range_search = self._range_re.search(val)
+        if result_range_search:
+            val = self.cut_string(val, result_range_search.start(), result_range_search.end()-1)
+        result_write_search = self.find_wirte_action(val)
+        if result_write_search:
+            val = val.replace('WRITE', '')
         val = val.replace(",", "")
         data_area_match = self._data_area_re.match(val)
         if data_area_match is None:
             raise ValueError('No valid S7 address:{}'.format(str_val))
 
-        self.area = data_area_match.group(1)
-
-        if self.area in ['M', 'I', 'E', 'Q', 'A']:
-            self.address = int(data_area_match.group(2))
-            val = val[data_area_match.end(0):]
-            bit_match = self._bit_type_address_re.search(val)
-            if bit_match is None:
+        area = data_area_match.group(1)
+        if area in ['M', 'I', 'E', 'Q', 'A']:
+            address = int(data_area_match.group(2))
+            action_type = self.find_bit_action(val)
+            val_indirect = val[data_area_match.end(0):]
+            bit_match = self._bit_type_address_re.search(val_indirect)
+            if bit_match is None or result_range_search or result_write_search:
                 raise ValueError('No valid S7 address:{}'.format(str_val))
-            self.bit_nr = int(bit_match.group(0))
-            self.data_type = 'BOOL'
+            bit_number = int(bit_match.group(0))
+            data_type = DataType.BOOL
 
-        elif self.area in ['MB', 'MW', 'MD', 'AB', 'AW', 'AD', 'IB', 'IW', 'ID',
+        elif area in ['MB', 'MW', 'MD', 'AB', 'AW', 'AD', 'IB', 'IW', 'ID',
                            'QB', 'QW', 'QD', 'EB', 'EW', 'ED']:
-            self.address = int(data_area_match.group(2))
-            val = val[data_area_match.end(0):]
-            data_type_match = self._data_type_re.match(val)
-
-            char = self.area[1]
-
+            address = int(data_area_match.group(2))
+            action_type = result_write_search
+            val_indirect = val[data_area_match.end(0):]
+            data_type_match = self._data_type_re.match(val_indirect)
+            char = area[1]
             if char == 'B':
-                implicit_data_type = 'BYTE'
+                implicit_data_type = DataType.BYTE
             elif char == 'W':
-                implicit_data_type = 'WORD'
+                implicit_data_type = DataType.WORD
             elif char == 'D':
-                implicit_data_type = 'DWORD'
-
+                implicit_data_type = DataType.DWORD
             if data_type_match is None:
-                if len(val) > 0:
-                    raise ValueError('No valid S7 address:{}'.format(str_val))
-                self.data_type = implicit_data_type
+                if len(val_indirect) > 0:
+                     raise ValueError('No valid S7 address:{}'.format(str_val))
+                data_type = implicit_data_type
             else:
-                self.data_type = data_type_match.group(0)
-                if self.data_type in ['BYTE', 'SINT'] and implicit_data_type == 'BYTE':
+                data_type = self.convert_str_to_data_type(data_type_match.group(0))
+                if data_type in [DataType.BYTE, DataType.SINT] and implicit_data_type == DataType.BYTE:
                     pass
-                elif self.data_type in ['WORD', 'INT'] and implicit_data_type == 'WORD':
+                elif data_type in [DataType.WORD, DataType.INT] and implicit_data_type == DataType.WORD:
                     pass
-                elif self.data_type in ['DWORD', 'DINT', 'REAL'] and implicit_data_type == 'DWORD':
+                elif data_type in [DataType.DWORD, DataType.DINT, DataType.REAL] and implicit_data_type == DataType.DWORD:
                     pass
                 else:
                     raise ValueError('No valid S7 address:{}'.format(str_val))
+            var_range = self.analyze_range(result_range_search, data_type)
+            area = area[0]
 
-            self.area = self.area[0]
-
-        elif self.area == 'DB':
-            self.area = 'D'
-            self.address = int(data_area_match.group(2))
-            val = val[data_area_match.end(0):]
-            data_block_address_match = self._data_block_offset_re.search(val)
+        elif area == 'DB':
+            area = 'D'
+            address = int(data_area_match.group(2))
+            val_indirect = val[data_area_match.end(0):]
+            data_block_address_match = self._data_block_offset_re.search(val_indirect)
             if data_block_address_match is None:
                 raise ValueError('No valid S7 address:{}'.format(str_val))
 
             char = data_block_address_match.group(1)[2]
 
             if char == 'X':
-                self.offset = int(data_block_address_match.group(2))
-                val = val[data_area_match.end(2):]
-                bit_match = self._bit_type_address_re.search(val)
-                if bit_match is None:
+                offset = int(data_block_address_match.group(2))
+                action_type = self.find_bit_action(val)
+                val_indirect = val_indirect[data_area_match.end(2):]
+                bit_match = self._bit_type_address_re.search(val_indirect)
+                if bit_match is None or result_range_search or result_write_search:
                     raise ValueError('No valid S7 address:{}'.format(str_val))
-                self.bit_nr = int(bit_match.group(0))
-                self.data_type = 'BOOL'
+                bit_number = int(bit_match.group(0))
+                data_type = DataType.BOOL
             else:
-                self.offset = int(data_block_address_match.group(2))
-                val = val[data_block_address_match.end(0):]
-                data_type_match = self._data_type_re.match(val)
-
+                offset = int(data_block_address_match.group(2))
+                action_type = result_write_search
+                val_indirect = val_indirect[data_block_address_match.end(0):]
+                data_type_match = self._data_type_re.match(val_indirect)
                 if char == 'B':
-                    implicit_data_type = 'BYTE'
+                    implicit_data_type = DataType.BYTE
                 elif char == 'W':
-                    implicit_data_type = 'WORD'
+                    implicit_data_type = DataType.WORD
                 elif char == 'D':
-                    implicit_data_type = 'DWORD'
+                    implicit_data_type = DataType.DWORD
 
                 if data_type_match is None:
-                    self.data_type = implicit_data_type
+                    data_type = implicit_data_type
                 else:
-                    self.data_type = data_type_match.group(0)
-                    if self.data_type in ['BYTE', 'SINT'] and implicit_data_type == 'BYTE':
+                    data_type = self.convert_str_to_data_type(data_type_match.group(0))
+                    if data_type in [DataType.BYTE, DataType.SINT] and implicit_data_type == DataType.BYTE:
                         pass
-                    elif self.data_type in ['WORD', 'INT'] and implicit_data_type == 'WORD':
+                    elif data_type in [DataType.WORD, DataType.INT] and implicit_data_type == DataType.WORD:
                         pass
-                    elif self.data_type in ['DWORD', 'DINT', 'REAL'] and implicit_data_type == 'DWORD':
+                    elif data_type in [DataType.DWORD, DataType.DINT, DataType.REAL] and implicit_data_type == DataType.DWORD:
                         pass
                     else:
                         raise ValueError('No valid S7 address:{}'.format(str_val))
+                var_range = self.analyze_range(result_range_search, data_type)
 
         else:
             raise ValueError('No valid S7 address:{}'.format(str_val))
 
         # Replacing German notation:
-        if self.area == 'E':
-            self.area = 'I'
-        elif self.area == 'A':
-            self.area = 'Q'
+        if area == 'E':
+            area = 'I'
+        elif area == 'A':
+            area = 'Q'
 
-        return (self.area, self.address, self.offset, self.bit_nr, self.data_type)
+        full_var_desc = variable_full_description(area, address, offset, bit_number, data_type, action_type, var_range)
+        return full_var_desc
 
 
 class ConfReader:
