@@ -1,50 +1,67 @@
 import logging
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
-from PyQt5.QtWidgets import QLabel, QPushButton
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, Qt, QLocale
+from PyQt5.QtGui import QIntValidator, QDoubleValidator, QValidator
+from PyQt5.QtWidgets import QLabel, QPushButton, QSlider, QDial, QProgressBar, QLineEdit
 import time
 import ibhlinkdriver
 import IBHconst
-from data_plc import BaseData, variable_address
+import data_plc
+from data_plc import BaseData, WritableBitData, WritableNumericData, variable_address, visu_variable, Action, DataType
 from collections import namedtuple, deque
 from enum import Enum
-"""
-Requirements:
-* Fixed refresh size for reding variables.
-* Avoid of directly connecting gui push buttons to driver read/write slots. This cause problems when buttons
-will be clicked many times in short time. 
-* To decide: If after r/w operations disconnect or stay connected.
-
-Connecting collection of visualization variables with gui objects:
-1. During loading of "qtcreators" *.ui files, all children of graphic screen will be checked for presence
-'what's this' property. One plc variable can be assigned to many gui elements
-
-Supported graphic elements:
-- Qlabel
-- QPushbutton, monostable
-- QPushbutton with "checkable" option, as bistable button
-- Qlineedit
-"""
+from utils import variable_full_description
 
 logger = logging.getLogger(__name__)
 
 class Status(Enum):
     ready = 1
     busy = 2
+    no_connection = 3
+    succeed = 4
 
 
 read_deque = deque()
 """
-collection of elements (data_plc.variable_address,size)
+Prepared tuples ready for consuming by driver,
+collection of elements "memory_chunk_type"
 """
 
 result_read_deque = deque()
 """
-collection of elements (data_plc.variable_address,list(int))
+Returning list of ints writen by driver,
+collection of elements "memory_chunk_type, list(int)"
+"""
+
+write_request_deque = deque()
+"""
+Not yet prepared for driver write operations,
+collection of elements "visu_variable, bool|int|float"
 """
 
 write_deque = deque()
-result_write_deque = deque()
+"""
+Prepared tuples for write for consuming by driver.
+Every tuple is single variable: one, two or four byte long.
+"""
 
+memory_chunk_type = namedtuple('memory_chunk_type',['area', 'address', 'offset', 'size'])
+
+class DoubleWordValidator(QValidator):
+
+    def __init__(self, bottom:int, top:int, parent=None):
+        super().__init__(parent)
+        self._bottom = int(bottom)
+        self._top = int(top)
+
+    def validate(self, p_str, p_int):
+        try:
+            _val = int(p_str)
+            if _val > self._top or _val < self._bottom:
+                return (QValidator.Invalid, p_str, p_int)
+            else:
+                return (QValidator.Acceptable, p_str, p_int)
+        except:
+            return (QValidator.Invalid, p_str, p_int)
 
 
 class Manager(QObject):
@@ -57,29 +74,29 @@ class Manager(QObject):
     * sending results of reads to subscribers
     * same operations above for writes
     """
-    visu_variable_type = namedtuple('visu_variable_type',['data', 'slot'])
-    def __init__(self):
-        """
-        example of finally result of read:
-        {M:{33:0x23,34:0x34,35:0x35,300:0x21,301:0x12},
-        I:{10:0x00,11:0x12},
-        Q:{},
-        D:{100:{0:0x02,1:0xff}, 200:{0:0xff,1:0xf0,10:0xaa}}
-        """
+    visu_object = namedtuple('visu_object', ['data', 'slot'])
+    def __init__(self, worker: "Worker"):
 
         super().__init__()
-        self.visu_variable_list = []
-        self.visu_variable = dict()
-        self.bytes_for_readout = {'M':{}, 'I':{}, 'Q':{}, 'D':{}}
-        self.m_area_list = []
-        # self._grouped_read_out_list
-        pass
+        self._visu_variable_list = []
+        self._visu_variable = dict()
+        self._templet_bytes_for_readout = {'M':{}, 'I':{}, 'Q':{}, 'D':{}}
+        self._processed_readout_list = []
+        self._socket_error_flag = False
+
+        worker.queued_read_out_finished.connect(self.collect_bytes_and_send_values)
+        self.start_packet_communication.connect(worker.queued_operations)
+        self.ask_for_plc_state.connect(worker.get_plc_status)
+        worker.plc_state_signal.connect(self.plc_state_receiver)
+        worker.status_signal.connect(self.socket_connection_error)
+
+        self._time_memory = time.time()
 
     @staticmethod
     def divide_lists_of_address(input_list, chunk_size):
         """
         Method divides list for bytes readout, list after processing should be optimized
-        to minimize count of readout.
+        to minimize count of readout. Total length of lists can be greater then input_list.
         :param input_list: list - with no duplicates unsorted or sorted
         :param chunk_size: int - size of byte block
         :return: list of lists - divided list
@@ -91,7 +108,6 @@ class Manager(QObject):
         _div_point = _list[0] + chunk_size - 1
         _prev_element = _list[0]
         _div_begin = _list[0]
-
         for element in _list:
             if element > _div_point:
                 _partial_result = [x for x in range(_div_begin, _prev_element + 1)]
@@ -99,85 +115,258 @@ class Manager(QObject):
                 _result.append(_partial_result)
                 _div_begin = element
             _prev_element = element
-
         _partial_result = [x for x in range(_div_begin, _prev_element + 1)]
         _result.append(_partial_result)
-
         return _result
 
-    def add_subscriber(self, data_description, q_obj_refernce):
+    def add_subscriber(self, full_description: variable_full_description, q_obj_ref):
         """
         Adding subscriber for plc data readout.
-        TODO: add some code for writing variables from visualization
-        :param data_description: tuple(area:string,db_number:int,address:int,bit_nr:int,data_type:string)
-        :param q_obj_refernce: QObject - Reference for QObject
+        :param full_description: variable_full_description
+        :param q_obj_ref: QObject - Reference for QObject
         :return:
         """
-
-        if isinstance(q_obj_refernce, QLabel):
-            data = BaseData(*data_description)
-            slot = q_obj_refernce.setText
-            self.visu_variable_list.append(self.visu_variable_type(data, slot))
-            # self.visu_variable_list.append((data, slot))
+        if isinstance(q_obj_ref, QLabel):
+            data = BaseData(full_description)
+            if q_obj_ref.pixmap() is not None:
+                slot = lambda val: q_obj_ref.setEnabled(bool(val))
+            else:
+                slot = lambda val: q_obj_ref.setText(str(val))
             self.populate_bytes_readout(data)
+            self._visu_variable_list.append(self.visu_object(data, slot))
+        elif isinstance(q_obj_ref, QPushButton):
+            if full_description.action in (Action.TOGGLE, Action.RESET, Action.SET):
+                data = WritableBitData(full_description)
+                q_obj_ref.clicked.connect(lambda: self.populate_write_request_by_bit_variable(data))
+            else:
+                data = BaseData(full_description)
+            if q_obj_ref.isCheckable():
+                slot = lambda val: self.slot_handling_qpushbutton(q_obj_ref, data, val)
+                self.populate_bytes_readout(data)
+                self._visu_variable_list.append(self.visu_object(data, slot))
+        elif isinstance(q_obj_ref, QSlider) or isinstance(q_obj_ref, QDial):
+            data = WritableNumericData(full_description)
+            if full_description.action == Action.WRITE:
+                q_obj_ref.setTracking(False)
+                q_obj_ref.valueChanged.connect(lambda val: self.populate_write_request_by_int_variable(data, val))
+            slot = lambda val: self.slot_handling_qslider(q_obj_ref, data, val)
+            self.populate_bytes_readout(data)
+            self._visu_variable_list.append(self.visu_object(data, slot))
+        elif isinstance(q_obj_ref, QProgressBar):
+            slot = lambda val: q_obj_ref.setValue(int(val))
+            data = BaseData(full_description)
+            self.populate_bytes_readout(data)
+            self._visu_variable_list.append(self.visu_object(data, slot))
+        elif isinstance(q_obj_ref, QLineEdit):
+            if full_description.action == Action.WRITE:
+                data = WritableNumericData(full_description)
+                if data.data_type == DataType.REAL:
+                    validator = QDoubleValidator(*data.value_range, 24)
+                    locale = QLocale(QLocale.C)
+                    locale.setNumberOptions(QLocale.RejectGroupSeparator)
+                    validator.setLocale(locale)
+                    q_obj_ref.editingFinished.connect(lambda: self.populate_write_request_by_int_variable(data, float(q_obj_ref.text())))
+                else:
+                    validator = DoubleWordValidator(*data.value_range)
+                    q_obj_ref.editingFinished.connect(lambda: self.populate_write_request_by_int_variable(data, int(q_obj_ref.text())))
+                q_obj_ref.setValidator(validator)
+            else:
+                data = BaseData(full_description)
+                q_obj_ref.setReadOnly(True)
+            slot = lambda val: self.slot_handling_qlineedit(q_obj_ref, data, val)
+            self.populate_bytes_readout(data)
+            self._visu_variable_list.append(self.visu_object(data, slot))
 
-        elif isinstance(q_obj_refernce, QPushButton):
-            pass
-        pass
+    def slot_handling_qpushbutton(self, ref:QPushButton, data, val):
+        if ref.isDown():
+            return
+        else:
+            if isinstance(data, WritableBitData) and data.request_sent:
+                return
+            ref.setChecked(bool(val))
 
-    def populate_bytes_readout(self, data):
+    def slot_handling_qslider(self, ref:QSlider, data, val):
+        if ref.isSliderDown():
+            return
+        else:
+            if not data.request_sent:
+                ref.blockSignals(True)
+                ref.setValue(int(val))
+                ref.blockSignals(False)
+
+    def slot_handling_qlineedit(self, ref:QLineEdit, data, val):
+        if isinstance(data, WritableNumericData):
+            if ref.hasFocus():
+                return
+            else:
+                if not data.request_sent:
+                    ref.setText(str(val))
+        else:
+            ref.setText(str(val))
+
+    def populate_bytes_readout(self, data: BaseData):
         if data.area == 'D':
-            if not data.address in self.bytes_for_readout['D'].keys():
-                self.bytes_for_readout['D'][data.address] = {}
+            if not data.address in self._templet_bytes_for_readout['D'].keys():
+                self._templet_bytes_for_readout['D'][data.address] = {}
             for byte_address in data.occupied_bytes:
-                self.bytes_for_readout['D'][data.address][byte_address] = None
+                self._templet_bytes_for_readout['D'][data.address][byte_address] = None
         else:
             for byte_address in data.occupied_bytes:
-                self.bytes_for_readout[data.area][byte_address] = None
+                self._templet_bytes_for_readout[data.area][byte_address] = None
 
-    def process_readout_list(self):
+    @pyqtSlot(BaseData)
+    def populate_write_request_by_bit_variable(self, data):
         """
+        Used for bit like actions: SET, RESET, TOGGLE
+        :param data: BaseData
+        :return:
+        """
+        for m, d, v in write_request_deque:
+            if data == d:
+                return
+        memory_chunk = None
+        data.request_sent = True
+        if data.area == 'D':
+            memory_chunk = memory_chunk_type('D', data.address, data.offset, 1)
+        elif data.area in ['M','I','Q']:
+            memory_chunk = memory_chunk_type(data.area, data.address, 0, 1)
+        write_request_deque.append((memory_chunk, data, None))
+
+
+    @pyqtSlot(WritableNumericData, int)
+    def populate_write_request_by_int_variable(self, data: WritableNumericData, val: int):
+        temp_index = None
+        for i, (m, d, v) in enumerate(write_request_deque):
+            if data == d:
+                temp_index = i
+                break
+        if temp_index:
+            del(write_request_deque[temp_index])
+        memory_chunk = None
+        data.request_sent = True
+        if data.area == 'D':
+            memory_chunk = memory_chunk_type('D', data.address, data.offset, data.size)
+        elif data.area in ['M', 'I', 'Q']:
+            memory_chunk = memory_chunk_type(data.area, data.address, 0, data.size)
+        write_request_deque.append((memory_chunk, data, val))
+
+    def optimize_readout_list(self):
+        """
+        The main role of method is to minimize count of readings, through group single
+        readings in memory block readings.
         Method should be called after last adding of variables for readout.
         Details of sending:
-        receiver expecting "read_bytes(self, data_type, data_number, db_number, size)"
+        driver expecting "read_bytes(self, data_type, data_address, offset, size)"
         List of tuples is needed to be prepared.
         :return:
         """
-        pass
+        _m_list = list(self._templet_bytes_for_readout['M'].keys())
+        _i_list = list(self._templet_bytes_for_readout['I'].keys())
+        _q_list = list(self._templet_bytes_for_readout['Q'].keys())
+        _d_list = dict()
+        for k,v in self._templet_bytes_for_readout['D'].items():
+            _d_list[k] = list(v.keys())
+
+        if len(_m_list):
+            for l in self.divide_lists_of_address(_m_list, IBHconst.IBHLINK_READ_MAX):
+                self._processed_readout_list.append(memory_chunk_type('M', l[0], 0, len(l)))
+
+        if len(_i_list):
+            for l in self.divide_lists_of_address(_i_list, IBHconst.IBHLINK_READ_MAX):
+                self._processed_readout_list.append(memory_chunk_type('I', l[0], 0, len(l)))
+
+        if len(_q_list):
+            for l in self.divide_lists_of_address(_q_list, IBHconst.IBHLINK_READ_MAX):
+                self._processed_readout_list.append(memory_chunk_type('Q', l[0], 0, len(l)))
+
+        for k,v in _d_list.items():
+            if len(v):
+                for l in self.divide_lists_of_address(v, IBHconst.IBHLINK_READ_MAX):
+                    self._processed_readout_list.append(memory_chunk_type('D', k, l[0], len(l)))
 
     @pyqtSlot()
     def do_work(self):
         """
-        Verification of reading process:
-        Check count of
-        :return:
         """
-        # TODO: get readout list and initialize reading
-        for key,val in self.bytes_for_readout.items():
-
-            pass
-        # TODO: consume result of reading
-        for elem in self.visu_variable_list:
-            elem.slot('{} {}'.format(elem.data.area , time.strftime('%H:%M:%S',time.localtime())))
-
-    ask_worker_for_readiness = pyqtSignal()
+        if self._socket_error_flag:
+            self.communication_status.emit(Status.no_connection)
+            read_deque.clear()
+            self._socket_error_flag = False
+        if len(read_deque) == 0:
+            for item in self._processed_readout_list:
+                read_deque.append(item)
+            self.ask_for_plc_state.emit()
+            self.start_packet_communication.emit()
 
     @pyqtSlot()
-    def collect_bytes(self):
+    def collect_bytes_and_send_values(self):
         """
         When reading process is finished ?:
         Check count of asked for reading bytes and counter of received bytes, if is equal
         emit signal to driver for its status.
         :return:
         """
-        pass
+        _bytes_for_readout_ = self._templet_bytes_for_readout.copy()
+        while True:
+            try:
+                (chunk, vals) = result_read_deque.popleft()
+                for i,v in enumerate(vals):
+                    try:
+                        if chunk.area == 'D':
+                            _bytes_for_readout_[chunk.area][chunk.address][chunk.offset + i] = vals[i]
+                        else:
+                            _bytes_for_readout_[chunk.area][chunk.address + i] = vals[i]
+                    except KeyError:
+                        pass
+            except IndexError:
+                break
+
+        for item in self._visu_variable_list:
+            temp_list = []
+            if item.data.area == 'D':
+                for byte_number in item.data.occupied_bytes:
+                    temp_byte = _bytes_for_readout_[item.data.area][item.data.address][byte_number]
+                    if temp_byte is not None:
+                        temp_list.append(temp_byte)
+                    else:
+                        item.slot(False)
+                        break
+                else:
+                    var_interpretation = item.data._plc_to_visu_conv(temp_list)
+                    item.slot(str(var_interpretation))
+            else:
+                for byte_number in item.data.occupied_bytes:
+                    temp_byte = _bytes_for_readout_[item.data.area][byte_number]
+                    if temp_byte is not None:
+                        temp_list.append(temp_byte)
+                    else:
+                        item.slot(False)
+                        break
+                else:
+                    var_interpretation = item.data._plc_to_visu_conv(temp_list)
+                    item.slot(var_interpretation)
+        print(time.time() - self._time_memory)
+        self._time_memory = time.time()
+
+        self.communication_status.emit(Status.succeed)
 
     # TODO: slot for receiving errors, status signals from worker
-    @pyqtSlot()
-    def worker_status_receiver(self):
+    @pyqtSlot(Status)
+    def worker_status_receiver(self,status):
         pass
 
+    @pyqtSlot(str)
+    def plc_state_receiver(self, state):
+        self.plc_state_signal.emit(state)
 
+    @pyqtSlot()
+    def socket_connection_error(self):
+        self._socket_error_flag = True
+
+    start_packet_communication = pyqtSignal()
+    ask_for_plc_state = pyqtSignal()
+    plc_state_signal = pyqtSignal(str)
+    communication_status = pyqtSignal(Status)
 
 
 class Worker(QObject):
@@ -188,7 +377,8 @@ class Worker(QObject):
     """
     def __init__(self, ip_address, mpi_address):
         super().__init__()
-        self._driver = ibhlinkdriver.ibhlinkdriver(ip_address, IBHconst.IBHLINK_PORT, mpi_address)
+        self._driver = ibhlinkdriver.IbhLinkDriver(ip_address, IBHconst.IBHLINK_PORT, mpi_address)
+        self._driver.timeout = 0
         self._stay_connected = False
         self._change_driver = False
 
@@ -234,12 +424,14 @@ class Worker(QObject):
 
             if self._driver.connected:
                 vals = self._driver.read_vals(data_type, data_address, offset, size)
-                self.read_bytes_signal.emit(vals)
+                if vals:
+                    self.read_bytes_signal.emit(vals)
+
         except ibhlinkdriver.DriverError as e:
             logger.warning(str(e))
-        finally:
-            if not self.stay_connected:
-                self._driver.disconnect_plc()
+
+        if not self.stay_connected:
+            self._driver.disconnect_plc()
         return vals
 
     @pyqtSlot(str, int, int, int, int)
@@ -254,10 +446,8 @@ class Worker(QObject):
         try:
             if not self._driver.connected:
                 self._driver.connect_plc()
-
             if self._driver.connected:
-                b_vals = val.to_bytes(max((val.bit_length() + 7) // 8, 1), byteorder='big')
-                self._driver.write_vals(data_type, data_address, offset, size, b_vals)
+                self._driver.write_vals(data_type, data_address, offset, size, val)
                 self.write_bytes_signal.emit()
         except ibhlinkdriver.DriverError as e:
             logger.warning(str(e))
@@ -265,52 +455,77 @@ class Worker(QObject):
             if not self.stay_connected:
                 self._driver.disconnect_plc()
 
-
-
     @pyqtSlot()
     def get_plc_status(self):
         try:
             if not self._driver.connected:
                 self._driver.connect_plc()
-
             if self._driver.connected:
                 status = self._driver.plc_get_run()
-                self.get_plc_status_signal.emit(status)
-                self._driver.disconnect_plc()
+                self.plc_state_signal.emit(status)
+            else:
+                self.status_signal.emit(Status.no_connection)
         except ibhlinkdriver.DriverError as e:
             self.failure_signal.emit(str(e))
+            self.plc_state_signal.emit('UNKNOWN')
+        except ConnectionError:
+            self._driver.drop_connection()
+            self.status_signal.emit(Status.no_connection)
         finally:
             if not self.stay_connected:
-                self._driver.drop_connection()
+                self._driver.disconnect_plc()
 
     @pyqtSlot()
+    def queued_operations(self):
+        if len(write_request_deque):
+            self.queued_write_in()
+        if len(read_deque):
+            self.queued_read_out()
+
     def queued_read_out(self):
-        while True:
-            try:
-                elements = read_deque.popleft()
-                vals = self.read_bytes(elements)
-               konsumuj vals
+        try:
+            while True:
+                try:
+                    chunk = read_deque.popleft()
+                    vals = self.read_bytes(chunk.area, chunk.address, chunk.offset, chunk.size)
+                    result_read_deque.append((chunk, vals))
+                except IndexError:
+                    break
+            self.queued_read_out_finished.emit()
+        except (ConnectionError, ibhlinkdriver.DriverError):
+            self.status_signal.emit(Status.no_connection)
 
-
-            except IndexError:
-                break
-
-
-
-    @pyqtSlot()
     def queued_write_in(self):
-        pass
+        try:
+            while True:
+                try:
+                    chunk, data, val = write_request_deque.popleft()
+                    value_list = self.read_bytes(chunk.area, chunk.address, chunk.offset, chunk.size)
+                    if type(data) is WritableBitData:
+                        if data.action == Action.TOGGLE:
+                            logic_val = data.bytes_list_to_variable(value_list)
+                            if logic_val == True:
+                                result_list = data.variable_to_bytes_list(value_list, False)
+                            else:
+                                result_list = data.variable_to_bytes_list(value_list, True)
+                        elif data.action == Action.SET:
+                            result_list = data.variable_to_bytes_list(value_list, True)
+                        elif data.action == Action.RESET:
+                            result_list = data.variable_to_bytes_list(value_list, False)
+                        self.write_bytes(chunk.area, chunk.address, chunk.offset, chunk.size, result_list)
+                    elif type(data) is WritableNumericData:
+                        result_list = data.variable_to_bytes_list(val)
+                        self.write_bytes(chunk.area, chunk.address, chunk.offset, chunk.size, result_list)
+                except IndexError:
+                    break
+            self.queued_write_in_finished.emit()
+        except (ConnectionError, ibhlinkdriver.DriverError):
+            self.status_signal.emit(Status.no_connection)
 
-    # TODO: slot for writing list<int>
-
-    # TODO: slot for reading any bit in byte
-
-    # TODO: slot for writing any bit in byte
-
-    # TODO: signal with read list of bytes
     failure_signal = pyqtSignal(str)
+    status_signal = pyqtSignal(Status)
     read_bytes_signal = pyqtSignal(list)
     write_bytes_signal = pyqtSignal()
-    get_plc_status_signal = pyqtSignal(str)
-    # TODO: signal with error
-
+    plc_state_signal = pyqtSignal(str)
+    queued_read_out_finished = pyqtSignal()
+    queued_write_in_finished = pyqtSignal()
