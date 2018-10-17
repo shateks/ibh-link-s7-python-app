@@ -43,6 +43,7 @@ class IbhLinkServerGui(QWidget):
 
         self.thread = QThread()
         self.worker = Worker(self.connector, self.model)
+        self.worker.lag = 0.01
         self.worker.moveToThread(self.thread)
 
         self.connector.signal.connect(self.worker.item_added)

@@ -6,6 +6,7 @@ from safe_connector import SafeConnector
 import IBHconst
 from IbhServerData import IbhDataCollection, data_item
 from enum import Enum
+import time
 
 class EventType(Enum):
     added = 1
@@ -38,6 +39,7 @@ class IbhLinkServer(threading.Thread):
         self.msg_number = 0
         self.max_recv_bytes = 512
         self.abort = threading.Event()
+        self._lag = None
 
     def start(self):
         self.abort.clear()
@@ -45,6 +47,14 @@ class IbhLinkServer(threading.Thread):
 
     def stop(self):
         self.abort.set()
+
+    @property
+    def lag(self):
+        return self._lag
+
+    @lag.setter
+    def lag(self, val_time):
+        self._lag = val_time
 
     def run(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -67,7 +77,8 @@ class IbhLinkServer(threading.Thread):
             try:
                 data = conn.recv(self.max_recv_bytes)
                 if data:
-
+                    if self.lag is not None:
+                        time.sleep(self.lag)
                     response = self.produce_respose(data, disconnect)
                     conn.send(response)
                 else:
@@ -231,8 +242,8 @@ class IbhLinkServer(threading.Thread):
 
             if self.connector and not _exist:
                 self.connector.emit(EventType.added, area)
-            elif self.connector and _exist:
-                self.connector.emit(EventType.changed, area)
+            # elif self.connector and _exist:
+            #     self.connector.emit(EventType.changed, area)
 
             msg.ln = IBHconst.TELE_HEADER_SIZE + msg.data_cnt
             ctypes.memmove(ctypes.addressof(msg.d), bytes(val), len(val))

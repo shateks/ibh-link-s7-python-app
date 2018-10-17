@@ -27,7 +27,11 @@ class BaseItem():
         return 1
 
     def child(self, row):
-        return list(self._child_dict.values())[row]
+        try:
+            result = list(self._child_dict.values())[row]
+            return result
+        except IndexError:
+            return None
 
     def name(self):
         return self._name

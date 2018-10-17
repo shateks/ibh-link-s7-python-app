@@ -17,10 +17,20 @@ class Worker(QObject):
         self._server = None
         self._connector = connector
         self._model = model
+        self._server_response_lag = None
+
+    @property
+    def lag(self):
+        return self._server_response_lag
+
+    @lag.setter
+    def lag(self,val_time):
+        self._server_response_lag = val_time
 
     @pyqtSlot()
     def start(self, ip_address: str, ip_port: int, mpi_address: int, collection: IbhDataCollection):
         self._server = IbhLinkServer(ip_address, ip_port, mpi_address, collection, self._connector)
+        self._server.lag = self._server_response_lag
         self._server.start()
         self.started.emit()
 
