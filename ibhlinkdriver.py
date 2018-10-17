@@ -5,7 +5,6 @@ import IBHconst
 
 logger = logging.getLogger(__name__)
 
-
 class DriverError(Exception):
     pass
 
@@ -22,73 +21,91 @@ class SocketUnexpectedDisconnected(DriverError):
     pass
 
 
-class ibhlinkdriver:
-    def __init__(self, ip_addr, ip_port, mpi_addr):
+class IbhLinkDriver:
+    def __init__(self, ip_addr: str, ip_port: int, mpi_addr: int) -> None:
+        """
+
+        :raises ValueError
+        """
         self.connected = False
+        self._socket = None
         self.ip_address = ip_addr
         self.ip_port = ip_port
         if mpi_addr < 0 or mpi_addr > 126:
-            print("mpi_addr < 0 or mpi_addr > 126")
+            raise ValueError("MPI Address is not in range (0,126)")
         self.mpi_address = mpi_addr
         self.msg_number = 0
         self.max_recv_bytes = 512
+        self._time_out = None
+
+    @property
+    def timeout(self):
+        return self._time_out
+
+    @timeout.setter
+    def timeout(self, val):
+        """
+        Setting timeout on driver, values lower than 0.1 will be treated as wait forever.
+        :param: int,float val: timeout value
+        :return:
+        """
+        if val < 0.1:
+            self._time_out = None
+        else:
+            self._time_out = val
 
     def connect_plc(self):
-        try:
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # self._socket.settimeout(5.0)
-            self._socket.connect((self.ip_address, self.ip_port))
-            logger.debug("Connected to:{}".format(self.ip_address))
-            self.connected = True
-        except ConnectionRefusedError as e:
-            print("Unhandled exception {}".format(e))
-            logger.warning("Exception during connecting: {}".format(e))
-            self.connected = False
+        """
+        :raises: OSError, ConnectionError
+        """
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.settimeout(self._time_out)
+        self._socket.connect((self.ip_address, self.ip_port))
+        logger.debug("Connected to:{}".format(self.ip_address))
+        self.connected = True
 
     def disconnect_plc(self):
+        """
+        :raises: DriverError, ConnectionError
+        """
         if not self.connected:
             return
-
         msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
                                      ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_DISCONNECT,
                                      device_adr=self.mpi_address)
         self.msg_number += 1
-
         msg_length = IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE
-
         self.sendData(bytes(msg_tx)[:msg_length])
-
         raw_bytes = self.receiveData()
-
         msg_rx = IBHconst.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
-
         self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
-
-        self.drop_connection()
+        self.connected = False
         logger.debug("Disconnected:{}".format(self.ip_address))
 
     def drop_connection(self):
-        if not self._socket._closed:
-            self._socket.shutdown(socket.SHUT_RDWR)
-            self._socket.close()
-            self.connected = False
 
-    def plc_get_run(self):
+        if self._socket is not None:
+            if not self._socket._closed and self._socket is not None:
+                # self._socket.shutdown(socket.SHUT_RDWR)
+                self._socket.close()
+            self._socket = None
+        self.connected = False
+
+    def plc_get_run(self) -> str:
+        """
+        :return: 'STOP', 'START', 'RUN' or 'UNKNOWN'
+        :raises: DriverError, ConnectionError
+        """
         msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
                                      ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_GET_OP_STATUS,
                                      device_adr=self.mpi_address)
         self.msg_number += 1
-
         self.sendData(bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE])
-
         raw_bytes = self.receiveData()
-
         msg_rx = IBHconst.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
-
         self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE + 2)
-
         op_status = int.from_bytes(msg_rx.d[:2], byteorder='little')
         if op_status == 0:
             return 'STOP'
@@ -99,11 +116,13 @@ class ibhlinkdriver:
         else:
             return 'UNKNOWN'
 
-    def read_vals(self, data_type, data_address, offset, size):
+    def read_vals(self, data_type: str, data_address: int, offset: int, size: int) -> [int]:
+        """
+        :raises: ValueError, DriverError, ConnectionError
+        """
         logger.debug('Reading vals:{}, address {}, offset {}, size {}'.format(data_type, data_address, offset, size))
         if size > IBHconst.IBHLINK_READ_MAX or size <= 0:
-            print("if size > IBHconst.IBHLINK_READ_MAX or size <= 0:")
-            return None
+            raise ValueError("size > IBHconst.IBHLINK_READ_MAX or size <= 0:")
         elif data_type == 'E' or data_type == 'I':
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.INPUT_AREA, data_adr=data_address,
                                          data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
@@ -117,17 +136,15 @@ class ibhlinkdriver:
             msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_DB, data_area=offset >> 8, data_idx=offset,
                                          data_adr=data_address, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
         elif size > IBHconst.IBHLINK_READ_MAX / 2:
-            print("size > IBHconst.IBHLINK_READ_MAX/2")
-            return None
+            raise ValueError("size > IBHconst.IBHLINK_READ_MAX/2")
         elif data_type == 'T':
             # TODO: implementation read 'T'
-            pass
+            return None
         elif data_type == 'Z' or data_type == 'C':
             # TODO: implementation read 'C'
-            pass
-        else:
-            print("No valid data type")
             return None
+        else:
+            raise ValueError("No valid data type")
 
         msg_tx.rx = IBHconst.MPI_TASK
         msg_tx.tx = IBHconst.HOST
@@ -138,9 +155,14 @@ class ibhlinkdriver:
 
         self.msg_number += 1
         msg_length = IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE
-        self.sendData(bytes(msg_tx)[:msg_length])
 
-        raw_bytes = self.receiveData()
+        try:
+            self.sendData(bytes(msg_tx)[:msg_length])
+            raw_bytes = self.receiveData()
+        except ConnectionError as e:
+            # self.connected = False
+            logger.error(e)
+            raise
 
         msg_rx = IBHconst.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
@@ -156,17 +178,17 @@ class ibhlinkdriver:
         else:
             return None
 
-    def write_vals(self, data_type, data_address, offset, size, vals):
-        # TODO: implementacja write
+    def write_vals(self, data_type: str, data_address: int, offset: int, size: int, vals: bytes) -> bool:
+        """
+        :returns: Succeed of operation.
+        :raises: TypeError, ValueError, DriverError, ConnectionError
+        """
         if not type(vals) is bytes:
             raise TypeError("Given 'vals' of type {}, use bytes object".format(type(vals)))
         if len(vals) != size:
-            logger.warning("Length of byte array({}) is not equal to size of write{}".format(len(vals),size))
-            if len(vals) < size:
-                size = len(vals)
+            raise ValueError("Length of byte array({}) is not equal to size of write{}".format(len(vals),size))
         if size > IBHconst.IBHLINK_WRITE_MAX or size <= 0:
-            print("if size > IBHconst.IBHLINK_WRITE_MAX or size <= 0:")
-            return None
+            raise ValueError("size > IBHconst.IBHLINK_WRITE_MAX or size <= 0. Given:".format(size))
         elif data_type == 'E' or data_type == 'I':
             msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_IO,
                                          data_area=IBHconst.INPUT_AREA, data_adr=data_address,
@@ -189,16 +211,16 @@ class ibhlinkdriver:
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
         elif size > IBHconst.IBHLINK_WRITE_MAX / 2:
             logger.warning("size > IBHconst.IBHLINK_WRITE_MAX/2")
-            return None
+            return False
         elif data_type == 'T':
-            # TODO: implementacja read 'T'
-            pass
+            # TODO: implementation 'T'
+            return False
         elif data_type == 'Z' or data_type == 'C':
-            # TODO: implementacja read 'C'
-            pass
+            # TODO: implementation 'C'
+            return False
         else:
             logger.warning("No valid data type")
-            return None
+            raise ValueError("No valid data type, given:{}".format(data_type))
 
         msg_tx.rx = IBHconst.MPI_TASK
         msg_tx.tx = IBHconst.HOST
@@ -220,7 +242,11 @@ class ibhlinkdriver:
 
         return True
 
-    def sendData(self, raw_bytes):
+    def sendData(self, raw_bytes: bytes) -> int:
+        """
+        :returns: Count of sent bytes.
+        :raises: DriverError, ConnectionError
+        """
         logger.debug("Sending:{}".format(raw_bytes))
         bytes_count = self._socket.send(raw_bytes)
         if bytes_count != len(raw_bytes):
@@ -229,10 +255,12 @@ class ibhlinkdriver:
             )
         return bytes_count
 
-    def receiveData(self):
+    def receiveData(self) -> bytes:
+        """
+        :raises: DriverError, ConnectionError
+        """
         raw_bytes = self._socket.recv(self.max_recv_bytes)
         logger.debug("Receiving:{}".format(raw_bytes))
-
         if len(raw_bytes) < IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE:
             if len(raw_bytes) == 0:
                 self.drop_connection()
@@ -242,10 +270,12 @@ class ibhlinkdriver:
                     'Received telegram is too short is {}, expected {}'.format(len(raw_bytes),
                     IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE)
                 )
-
         return raw_bytes
 
-    def received_telegram_check(self, tx, rx, expeceted_rx_ln):
+    def received_telegram_check(self, tx: IBHconst.IBHLinkMSG, rx: IBHconst.IBHLinkMSG, expeceted_rx_ln: int) -> None:
+        """
+        :raises: DriverError
+        """
         if rx.f != IBHconst.CON_OK:
             raise FaultsInTelegramError('Received telegram error code non zero value, error code(f)={0:#x}'.format(rx.f))
         elif rx.tx != tx.rx or rx.rx != tx.tx:
@@ -273,123 +303,10 @@ class ibhlinkdriver:
         elif rx.func_code != tx.func_code:
             raise CorruptedTelegramError('Sent and received telegram function code not match');
 
-    def GetMB(self, Nr):
-        val = self.read_vals('M', Nr, 0, 1)
-        return val[0]
-
-    def GetMW(self, Nr):
-        val = self.read_vals('M', Nr, 0, 2)
-        return int.from_bytes(val, byteorder='big')
-
-    def GetMD(self, Nr):
-        val = self.read_vals('M', Nr, 0, 4)
-        return int.from_bytes(val, byteorder='big')
-
-    def GetM(self, Nr, BitNr):
-        val = self.read_vals('M', Nr, 0, 1)
-        mask = 1 << BitNr
-        return val & mask != 0
-
-    def SetMB(self, Nr, val):
-        self.write_vals('M', Nr, 0, 1, val)
-
-    # TODO: Sprawdź metody czy nie trzeba ustawić byteorder
-    def SetMW(self, Nr, val):
-        self.write_vals('M', Nr, 0, 2, val)
-
-    def SetMD(self, Nr, val):
-        self.write_vals('M', Nr, 0, 4, val)
-
-    def SetM(self, Nr, BitNr, val):
-        if BitNr > 7:
-            raise ValueError("Given 'BitNr' greater than 7".format(type(BitNr)))
-        old_val = self.read_vals('M', Nr, 0, 1)
-        mask = 1 << BitNr
-
-        if val:
-            new_val = old_val | mask
-        else:
-            new_val = old_val & (0xff - mask)
-
-        self.write_vals('M', Nr, 0, 1, new_val)
-
-
-    def GetEB(self, Nr, val):
-        pass
-
-    def GetEW(self, Nr, val):
-        pass
-
-    def GetED(self, Nr, val):
-        pass
-
-    def GetE(self, Nr, BitNr, val):
-        pass
-
-    def SetEB(self, Nr, val):
-        pass
-
-    def SetEW(self, Nr, val):
-        pass
-
-    def SetED(self, Nr, val):
-        pass
-
-    def SetE(self, Nr, BitNr, val):
-        pass
-
-    def GetAB(self, Nr, val):
-        pass
-
-    def GetAW(self, Nr, val):
-        pass
-
-    def GetAD(self, Nr, val):
-        pass
-
-    def GetA(self, Nr, BitNr, val):
-        pass
-
-    def SetAB(self, Nr, val):
-        pass
-
-    def SetAW(self, Nr, val):
-        pass
-
-    def SetAD(self, Nr, val):
-        pass
-
-    def SetA(self, Nr, BitNr, val):
-        pass
-
-    def GetDBB(self, Nr, DBNr, val):
-        pass
-
-    def GetDBW(self, Nr, DBNr, val):
-        pass
-
-    def GetDBD(self, Nr, DBNr, val):
-        pass
-
-    def GetDBX(self, Nr, DBNr, BitNr, val):
-        pass
-
-    def SetDBB(self, Nr, DBNr, val):
-        pass
-
-    def SetDBW(self, Nr, DBNr, val):
-        pass
-
-    def SetDBD(self, Nr, DBNr, val):
-        pass
-
-    def SetDBX(self, Nr, DBNr, BitNr, val):
-        pass
-
 
 if __name__ == "__main__":
-    driver = ibhlinkdriver('192.168.1.15', 1099, 2)
-    # driver = ibhlinkdriver('127.0.0.1', 1099, 2)
+    driver = IbhLinkDriver('192.168.1.15', 1099, 2)
+    driver.timeout = 5
     driver.connect_plc()
     print("connected {}".format(driver.connected))
 
