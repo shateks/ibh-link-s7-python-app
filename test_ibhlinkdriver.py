@@ -1,6 +1,6 @@
 import socket
-import ibhlinkdriver
-import IBHconst as c
+import ibh_link_client
+import ibh_const as c
 from unittest import TestCase,mock
 import faulthandler
 
@@ -37,7 +37,7 @@ class TestIbhlinkdriver(TestCase):
         self.addCleanup(self.patcher.stop)
         self._socket_class = self.patcher.start()
         self._instance_socket_class = self._socket_class.return_value
-        self.driver = ibhlinkdriver.IbhLinkDriver(self.ipAddr, self.ipPort, self.mpiAddr)
+        self.driver = ibh_link_client.IbhLinkDriver(self.ipAddr, self.ipPort, self.mpiAddr)
 
     def test_plc_get_run(self):
         raw_bytes_msg_struct = bytes(c.IBHLinkMSG( rx=c.MPI_TASK, tx=c.HOST, nr=0, ln=c.MSG_HEADER_SIZE,

@@ -1,7 +1,7 @@
 import logging
 import socket
 import ctypes
-import IBHconst
+import ibh_const
 
 logger = logging.getLogger(__name__)
 
@@ -70,16 +70,16 @@ class IbhLinkDriver:
         """
         if not self.connected:
             return
-        msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
-                                     ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_DISCONNECT,
-                                     device_adr=self.mpi_address)
+        msg_tx = ibh_const.IBHLinkMSG(rx=ibh_const.MPI_TASK, tx=ibh_const.HOST, nr=self.msg_number,
+                                      ln=ibh_const.MSG_HEADER_SIZE, b=ibh_const.MPI_DISCONNECT,
+                                      device_adr=self.mpi_address)
         self.msg_number += 1
-        msg_length = IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE
+        msg_length = ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE
         self.sendData(bytes(msg_tx)[:msg_length])
         raw_bytes = self.receiveData()
-        msg_rx = IBHconst.IBHLinkMSG()
+        msg_rx = ibh_const.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
-        self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
+        self.received_telegram_check(msg_tx, msg_rx, ibh_const.TELE_HEADER_SIZE)
         self.connected = False
         logger.debug("Disconnected:{}".format(self.ip_address))
 
@@ -97,15 +97,15 @@ class IbhLinkDriver:
         :return: 'STOP', 'START', 'RUN' or 'UNKNOWN'
         :raises: DriverError, ConnectionError
         """
-        msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
-                                     ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_GET_OP_STATUS,
-                                     device_adr=self.mpi_address)
+        msg_tx = ibh_const.IBHLinkMSG(rx=ibh_const.MPI_TASK, tx=ibh_const.HOST, nr=self.msg_number,
+                                      ln=ibh_const.MSG_HEADER_SIZE, b=ibh_const.MPI_GET_OP_STATUS,
+                                      device_adr=self.mpi_address)
         self.msg_number += 1
-        self.sendData(bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE])
+        self.sendData(bytes(msg_tx)[:ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE])
         raw_bytes = self.receiveData()
-        msg_rx = IBHconst.IBHLinkMSG()
+        msg_rx = ibh_const.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
-        self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE + 2)
+        self.received_telegram_check(msg_tx, msg_rx, ibh_const.TELE_HEADER_SIZE + 2)
         op_status = int.from_bytes(msg_rx.d[:2], byteorder='little')
         if op_status == 0:
             return 'STOP'
@@ -121,21 +121,21 @@ class IbhLinkDriver:
         :raises: ValueError, DriverError, ConnectionError
         """
         logger.debug('Reading vals:{}, address {}, offset {}, size {}'.format(data_type, data_address, offset, size))
-        if size > IBHconst.IBHLINK_READ_MAX or size <= 0:
+        if size > ibh_const.IBHLINK_READ_MAX or size <= 0:
             raise ValueError("size > IBHconst.IBHLINK_READ_MAX or size <= 0:")
         elif data_type == 'E' or data_type == 'I':
-            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.INPUT_AREA, data_adr=data_address,
-                                         data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+            msg_tx = ibh_const.IBHLinkMSG(b=ibh_const.MPI_READ_WRITE_IO, data_area=ibh_const.INPUT_AREA, data_adr=data_address,
+                                          data_cnt=size, data_type=ibh_const.TASK_TDT_UINT8)
         elif data_type == 'A' or data_type == 'O' or data_type == 'Q':
-            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_IO, data_area=IBHconst.OUTPUT_AREA,
-                                         data_adr=data_address, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+            msg_tx = ibh_const.IBHLinkMSG(b=ibh_const.MPI_READ_WRITE_IO, data_area=ibh_const.OUTPUT_AREA,
+                                          data_adr=data_address, data_cnt=size, data_type=ibh_const.TASK_TDT_UINT8)
         elif data_type == 'M':
-            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_M, data_adr=data_address,
-                                         data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+            msg_tx = ibh_const.IBHLinkMSG(b=ibh_const.MPI_READ_WRITE_M, data_adr=data_address,
+                                          data_cnt=size, data_type=ibh_const.TASK_TDT_UINT8)
         elif data_type == 'D':
-            msg_tx = IBHconst.IBHLinkMSG(b=IBHconst.MPI_READ_WRITE_DB, data_area=offset >> 8, data_idx=offset,
-                                         data_adr=data_address, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
-        elif size > IBHconst.IBHLINK_READ_MAX / 2:
+            msg_tx = ibh_const.IBHLinkMSG(b=ibh_const.MPI_READ_WRITE_DB, data_area=offset >> 8, data_idx=offset,
+                                          data_adr=data_address, data_cnt=size, data_type=ibh_const.TASK_TDT_UINT8)
+        elif size > ibh_const.IBHLINK_READ_MAX / 2:
             raise ValueError("size > IBHconst.IBHLINK_READ_MAX/2")
         elif data_type == 'T':
             # TODO: implementation read 'T'
@@ -146,15 +146,15 @@ class IbhLinkDriver:
         else:
             raise ValueError("No valid data type")
 
-        msg_tx.rx = IBHconst.MPI_TASK
-        msg_tx.tx = IBHconst.HOST
-        msg_tx.ln = IBHconst.TELE_HEADER_SIZE
+        msg_tx.rx = ibh_const.MPI_TASK
+        msg_tx.tx = ibh_const.HOST
+        msg_tx.ln = ibh_const.TELE_HEADER_SIZE
         msg_tx.nr = self.msg_number
         msg_tx.device_adr = self.mpi_address
-        msg_tx.func_code = IBHconst.TASK_TFC_READ
+        msg_tx.func_code = ibh_const.TASK_TFC_READ
 
         self.msg_number += 1
-        msg_length = IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE
+        msg_length = ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE
 
         try:
             self.sendData(bytes(msg_tx)[:msg_length])
@@ -164,15 +164,15 @@ class IbhLinkDriver:
             logger.error(e)
             raise
 
-        msg_rx = IBHconst.IBHLinkMSG()
+        msg_rx = ibh_const.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
 
-        self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE + size)
+        self.received_telegram_check(msg_tx, msg_rx, ibh_const.TELE_HEADER_SIZE + size)
 
-        if msg_rx.a in [IBHconst.MPI_READ_WRITE_DB, IBHconst.MPI_READ_WRITE_IO, IBHconst.MPI_READ_WRITE_M]:
+        if msg_rx.a in [ibh_const.MPI_READ_WRITE_DB, ibh_const.MPI_READ_WRITE_IO, ibh_const.MPI_READ_WRITE_M]:
             list_of_bytes = msg_rx.d[:msg_rx.data_cnt]  # type: list
             return list_of_bytes
-        elif msg_rx.a in [IBHconst.MPI_READ_WRITE_CNT, IBHconst.MPI_READ_WRITE_TIM]:
+        elif msg_rx.a in [ibh_const.MPI_READ_WRITE_CNT, ibh_const.MPI_READ_WRITE_TIM]:
             list_of_bytes = msg_rx.d[:2 * msg_rx.data_cnt]  # type: list
             return list_of_bytes
         else:
@@ -187,29 +187,29 @@ class IbhLinkDriver:
             raise TypeError("Given 'vals' of type {}, use bytes object".format(type(vals)))
         if len(vals) != size:
             raise ValueError("Length of byte array({}) is not equal to size of write{}".format(len(vals),size))
-        if size > IBHconst.IBHLINK_WRITE_MAX or size <= 0:
+        if size > ibh_const.IBHLINK_WRITE_MAX or size <= 0:
             raise ValueError("size > IBHconst.IBHLINK_WRITE_MAX or size <= 0. Given:".format(size))
         elif data_type == 'E' or data_type == 'I':
-            msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_IO,
-                                         data_area=IBHconst.INPUT_AREA, data_adr=data_address,
-                                         data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+            msg_tx = ibh_const.IBHLinkMSG(ln=ibh_const.TELE_HEADER_SIZE + size, b=ibh_const.MPI_READ_WRITE_IO,
+                                          data_area=ibh_const.INPUT_AREA, data_adr=data_address,
+                                          data_cnt=size, data_type=ibh_const.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
         elif data_type == 'A' or data_type == 'O' or data_type == 'Q':
-            msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_IO,
-                                         data_area=IBHconst.OUTPUT_AREA, data_adr=data_address,
-                                         data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+            msg_tx = ibh_const.IBHLinkMSG(ln=ibh_const.TELE_HEADER_SIZE + size, b=ibh_const.MPI_READ_WRITE_IO,
+                                          data_area=ibh_const.OUTPUT_AREA, data_adr=data_address,
+                                          data_cnt=size, data_type=ibh_const.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
         elif data_type == 'M':
-            msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_M,
-                                         data_adr=data_address,
-                                         data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+            msg_tx = ibh_const.IBHLinkMSG(ln=ibh_const.TELE_HEADER_SIZE + size, b=ibh_const.MPI_READ_WRITE_M,
+                                          data_adr=data_address,
+                                          data_cnt=size, data_type=ibh_const.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
         elif data_type == 'D':
-            msg_tx = IBHconst.IBHLinkMSG(ln=IBHconst.TELE_HEADER_SIZE + size, b=IBHconst.MPI_READ_WRITE_DB,
-                                         data_area=offset >> 8, data_idx=offset,
-                                         data_adr=data_address, data_cnt=size, data_type=IBHconst.TASK_TDT_UINT8)
+            msg_tx = ibh_const.IBHLinkMSG(ln=ibh_const.TELE_HEADER_SIZE + size, b=ibh_const.MPI_READ_WRITE_DB,
+                                          data_area=offset >> 8, data_idx=offset,
+                                          data_adr=data_address, data_cnt=size, data_type=ibh_const.TASK_TDT_UINT8)
             ctypes.memmove(ctypes.addressof(msg_tx.d), vals, size)
-        elif size > IBHconst.IBHLINK_WRITE_MAX / 2:
+        elif size > ibh_const.IBHLINK_WRITE_MAX / 2:
             logger.warning("size > IBHconst.IBHLINK_WRITE_MAX/2")
             return False
         elif data_type == 'T':
@@ -222,23 +222,23 @@ class IbhLinkDriver:
             logger.warning("No valid data type")
             raise ValueError("No valid data type, given:{}".format(data_type))
 
-        msg_tx.rx = IBHconst.MPI_TASK
-        msg_tx.tx = IBHconst.HOST
+        msg_tx.rx = ibh_const.MPI_TASK
+        msg_tx.tx = ibh_const.HOST
         msg_tx.nr = self.msg_number
         msg_tx.device_adr = self.mpi_address
-        msg_tx.func_code = IBHconst.TASK_TFC_WRITE
+        msg_tx.func_code = ibh_const.TASK_TFC_WRITE
 
         self.msg_number += 1
 
-        msg_length = IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE + size
+        msg_length = ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE + size
         self.sendData(bytes(msg_tx)[:msg_length])
 
         raw_bytes = self.receiveData()
 
-        msg_rx = IBHconst.IBHLinkMSG()
+        msg_rx = ibh_const.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)
 
-        self.received_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
+        self.received_telegram_check(msg_tx, msg_rx, ibh_const.TELE_HEADER_SIZE)
 
         return True
 
@@ -261,22 +261,22 @@ class IbhLinkDriver:
         """
         raw_bytes = self._socket.recv(self.max_recv_bytes)
         logger.debug("Receiving:{}".format(raw_bytes))
-        if len(raw_bytes) < IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE:
+        if len(raw_bytes) < ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE:
             if len(raw_bytes) == 0:
                 self.drop_connection()
                 raise SocketUnexpectedDisconnected('Zero length data received, closing socket')
             else:
                 raise ToShortSendReceiveTelegramError(
                     'Received telegram is too short is {}, expected {}'.format(len(raw_bytes),
-                    IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE)
+                                                                               ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE)
                 )
         return raw_bytes
 
-    def received_telegram_check(self, tx: IBHconst.IBHLinkMSG, rx: IBHconst.IBHLinkMSG, expeceted_rx_ln: int) -> None:
+    def received_telegram_check(self, tx: ibh_const.IBHLinkMSG, rx: ibh_const.IBHLinkMSG, expeceted_rx_ln: int) -> None:
         """
         :raises: DriverError
         """
-        if rx.f != IBHconst.CON_OK:
+        if rx.f != ibh_const.CON_OK:
             raise FaultsInTelegramError('Received telegram error code non zero value, error code(f)={0:#x}'.format(rx.f))
         elif rx.tx != tx.rx or rx.rx != tx.tx:
             raise CorruptedTelegramError('Received telegram transmiter(tx), receiver(rx) not match')

@@ -1,12 +1,12 @@
 import random
 import sys
 
-from ibhServerGui import *
+from ui_ibh_server import *
 from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal, Qt, QModelIndex
 from PyQt5.QtWidgets import QWidget, QApplication
-from IbhServerData import *
-from IbhLinkServerModel import Model, ChangeByteDelegate, ProxySortModel
-from ibhServerQtAdapter import Worker
+from ibh_server_data import *
+from ibh_link_server_model import Model, ChangeByteDelegate, ProxySortModel
+from ibh_server_qt_adapter import Worker
 import faulthandler
 import PyQt5
 from safe_connector import SafeConnector

@@ -1,8 +1,8 @@
 import logging.handlers
 import sys, os
 from PyQt5.QtWidgets import QApplication, QWidget
-from ui_gui_client import *
-from ibhQtAdapter import *
+from ui_ibh_client import *
+from ibh_qt_adapter import *
 from PyQt5.QtCore import QThread, Qt
 
 MEMORY_AREA_LIST = ['I - INPUT','Q - QUTPUT','M - MEMORY','DB - DATA BLOCK']

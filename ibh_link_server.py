@@ -3,8 +3,8 @@ import threading
 import ctypes
 import data_plc
 from safe_connector import SafeConnector
-import IBHconst
-from IbhServerData import IbhDataCollection, data_item
+import ibh_const
+from ibh_server_data import IbhDataCollection, data_item
 from enum import Enum
 import time
 
@@ -34,7 +34,7 @@ class IbhLinkServer(threading.Thread):
         self.connector = connector
         if mpi_addr < 0 or mpi_addr > 126:
             raise ValueError("mpi_addr < 0 or mpi_addr > 126")
-        self.plc_status = IBHconst.OP_STATUS_STOP
+        self.plc_status = ibh_const.OP_STATUS_STOP
         self.mpi_address = mpi_addr
         self.msg_number = 0
         self.max_recv_bytes = 512
@@ -129,9 +129,9 @@ class IbhLinkServer(threading.Thread):
 
 
     def produce_respose(self, data:bytes, disconnect:threading.Event) -> bytes:
-        msg_rx = IBHconst.IBHLinkMSG()
+        msg_rx = ibh_const.IBHLinkMSG()
         msg_rx.receiveSome(data)
-        msg_tx = IBHconst.IBHLinkMSG()
+        msg_tx = ibh_const.IBHLinkMSG()
         msg_tx.rx = msg_rx.tx
         msg_tx.tx = msg_rx.rx
         # msg_tx.ln = ?
@@ -155,66 +155,66 @@ class IbhLinkServer(threading.Thread):
         if error:
             msg_tx.ln = 8
             msg_tx.f = error
-            return bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + msg_tx.ln]
+            return bytes(msg_tx)[:ibh_const.MSG_HEADER_SIZE + msg_tx.ln]
 
-        if msg_rx.b == IBHconst.MPI_READ_WRITE_DB:
+        if msg_rx.b == ibh_const.MPI_READ_WRITE_DB:
             area ='D'
             data_address = msg_rx.data_adr
             db_offset = (msg_rx.data_area << 8) + msg_rx.data_idx
             size = msg_rx.data_cnt
-            if msg_rx.func_code == IBHconst.TASK_TFC_READ:
+            if msg_rx.func_code == ibh_const.TASK_TFC_READ:
                 return self.fill_message_with_collection_data(msg_tx,area,data_address,db_offset,size)
-            elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
+            elif msg_rx.func_code == ibh_const.TASK_TFC_WRITE:
                 return self.fill_collection_with_message_data(msg_tx,area,data_address,db_offset,size,msg_rx.d)
 
-        elif msg_rx.b == IBHconst.MPI_GET_OP_STATUS:
-            msg_tx.ln = IBHconst.TELE_HEADER_SIZE + 2
+        elif msg_rx.b == ibh_const.MPI_GET_OP_STATUS:
+            msg_tx.ln = ibh_const.TELE_HEADER_SIZE + 2
             ctypes.memmove(ctypes.addressof(msg_tx.d), data_plc._to_plc_word_(self.plc_status), 2)
-            return bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + msg_tx.ln]
+            return bytes(msg_tx)[:ibh_const.MSG_HEADER_SIZE + msg_tx.ln]
 
-        elif msg_rx.b == IBHconst.MPI_READ_WRITE_M:
+        elif msg_rx.b == ibh_const.MPI_READ_WRITE_M:
             area ='M'
             data_address = msg_rx.data_adr
             size = msg_rx.data_cnt
-            if msg_rx.func_code == IBHconst.TASK_TFC_READ:
+            if msg_rx.func_code == ibh_const.TASK_TFC_READ:
                 return self.fill_message_with_collection_data(msg_tx, area, data_address, 0, size)
-            elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
+            elif msg_rx.func_code == ibh_const.TASK_TFC_WRITE:
                 return self.fill_collection_with_message_data(msg_tx, area, data_address, 0, size, msg_rx.d)
 
-        elif msg_rx.b == IBHconst.MPI_READ_WRITE_IO:
-            if msg_rx.data_area == IBHconst.INPUT_AREA:
+        elif msg_rx.b == ibh_const.MPI_READ_WRITE_IO:
+            if msg_rx.data_area == ibh_const.INPUT_AREA:
                 area = 'I'
-            elif msg_rx.data_area == IBHconst.OUTPUT_AREA:
+            elif msg_rx.data_area == ibh_const.OUTPUT_AREA:
                 area = 'Q'
             data_address = msg_rx.data_adr
             size = msg_rx.data_cnt
-            if msg_rx.func_code == IBHconst.TASK_TFC_READ:
+            if msg_rx.func_code == ibh_const.TASK_TFC_READ:
                 return self.fill_message_with_collection_data(msg_tx, area, data_address, 0, size)
-            elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
+            elif msg_rx.func_code == ibh_const.TASK_TFC_WRITE:
                 return self.fill_collection_with_message_data(msg_tx, area, data_address, 0, size, msg_rx.d)
 
-        elif msg_rx.b == IBHconst.MPI_READ_WRITE_CNT:
+        elif msg_rx.b == ibh_const.MPI_READ_WRITE_CNT:
             area = 'C'
             data_address = msg_rx.data_adr
             size = msg_rx.data_cnt
-            if msg_rx.func_code == IBHconst.TASK_TFC_READ:
+            if msg_rx.func_code == ibh_const.TASK_TFC_READ:
                 return self.fill_message_with_collection_data(msg_tx, area, data_address, 0, size)
-            elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
+            elif msg_rx.func_code == ibh_const.TASK_TFC_WRITE:
                 return self.fill_collection_with_message_data(msg_tx, area, data_address, 0, size, msg_rx.d)
 
-        elif msg_rx.b == IBHconst.MPI_READ_WRITE_TIM:
+        elif msg_rx.b == ibh_const.MPI_READ_WRITE_TIM:
             area = 'T'
             data_address = msg_rx.data_adr
             size = msg_rx.data_cnt
-            if msg_rx.func_code == IBHconst.TASK_TFC_READ:
+            if msg_rx.func_code == ibh_const.TASK_TFC_READ:
                 return self.fill_message_with_collection_data(msg_tx, area, data_address, 0, size)
-            elif msg_rx.func_code == IBHconst.TASK_TFC_WRITE:
+            elif msg_rx.func_code == ibh_const.TASK_TFC_WRITE:
                 return self.fill_collection_with_message_data(msg_tx, area, data_address, 0, size, msg_rx.d)
 
-        elif msg_rx.b == IBHconst.MPI_DISCONNECT:
+        elif msg_rx.b == ibh_const.MPI_DISCONNECT:
             msg_tx.ln = 8
             disconnect.set()
-            return bytes(msg_tx)[:IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE]
+            return bytes(msg_tx)[:ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE]
 
     def fill_message_with_collection_data(self, msg, area, data_address, db_offset, size):
         """
@@ -245,12 +245,12 @@ class IbhLinkServer(threading.Thread):
             # elif self.connector and _exist:
             #     self.connector.emit(EventType.changed, area)
 
-            msg.ln = IBHconst.TELE_HEADER_SIZE + msg.data_cnt
+            msg.ln = ibh_const.TELE_HEADER_SIZE + msg.data_cnt
             ctypes.memmove(ctypes.addressof(msg.d), bytes(val), len(val))
         except ValueError:
-            msg.ln = IBHconst.TELE_HEADER_SIZE
-            msg.f = IBHconst.REJ_IV
-        return bytes(msg)[:IBHconst.MSG_HEADER_SIZE + msg.ln]
+            msg.ln = ibh_const.TELE_HEADER_SIZE
+            msg.f = ibh_const.REJ_IV
+        return bytes(msg)[:ibh_const.MSG_HEADER_SIZE + msg.ln]
 
     def fill_collection_with_message_data(self, msg, area, data_address, db_offset, size, array):
         """
@@ -283,11 +283,11 @@ class IbhLinkServer(threading.Thread):
             elif self.connector and _exist:
                 self.connector.emit(EventType.changed, area)
 
-            msg.ln = IBHconst.TELE_HEADER_SIZE
+            msg.ln = ibh_const.TELE_HEADER_SIZE
         except ValueError:
-            msg.ln = IBHconst.TELE_HEADER_SIZE
-            msg.f = IBHconst.REJ_IV
-        return bytes(msg)[:IBHconst.MSG_HEADER_SIZE + msg.ln]
+            msg.ln = ibh_const.TELE_HEADER_SIZE
+            msg.f = ibh_const.REJ_IV
+        return bytes(msg)[:ibh_const.MSG_HEADER_SIZE + msg.ln]
 
     def basic_telegram_check(self, rx) -> int:
         """
@@ -297,15 +297,15 @@ class IbhLinkServer(threading.Thread):
         CON_NA no response of the remote station remote station check network wiring, check remote
         address, check baud rate
         """
-        if rx.b in [IBHconst.MPI_READ_WRITE_DB, IBHconst.MPI_READ_WRITE_IO, IBHconst.MPI_READ_WRITE_M,
-                    IBHconst.MPI_READ_WRITE_CNT, IBHconst.MPI_READ_WRITE_TIM]:
-            if rx.func_code == IBHconst.TASK_TFC_READ and rx.data_cnt > IBHconst.IBHLINK_READ_MAX:
-                return IBHconst.CON_IV
-            if rx.func_code == IBHconst.TASK_TFC_WRITE and rx.data_cnt > IBHconst.IBHLINK_WRITE_MAX:
-                return IBHconst.CON_IV
+        if rx.b in [ibh_const.MPI_READ_WRITE_DB, ibh_const.MPI_READ_WRITE_IO, ibh_const.MPI_READ_WRITE_M,
+                    ibh_const.MPI_READ_WRITE_CNT, ibh_const.MPI_READ_WRITE_TIM]:
+            if rx.func_code == ibh_const.TASK_TFC_READ and rx.data_cnt > ibh_const.IBHLINK_READ_MAX:
+                return ibh_const.CON_IV
+            if rx.func_code == ibh_const.TASK_TFC_WRITE and rx.data_cnt > ibh_const.IBHLINK_WRITE_MAX:
+                return ibh_const.CON_IV
 
         if rx.device_adr != self.mpi_address:
-            return IBHconst.CON_NA
+            return ibh_const.CON_NA
 
         return 0
 

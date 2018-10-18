@@ -2,8 +2,8 @@ from typing import Iterable
 
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, Qt, QModelIndex, QAbstractItemModel
 from PyQt5.Qt import QVariant
-from ibhLinkServer import IbhLinkServer, IbhDataCollection, EventType
-from IbhLinkServerModel import Model
+from ibh_link_server import IbhLinkServer, IbhDataCollection, EventType
+from ibh_link_server_model import Model
 
 class ___model(QAbstractItemModel):
 

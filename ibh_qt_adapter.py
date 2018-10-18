@@ -3,8 +3,8 @@ from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, Qt, QLocale
 from PyQt5.QtGui import QIntValidator, QDoubleValidator, QValidator
 from PyQt5.QtWidgets import QLabel, QPushButton, QSlider, QDial, QProgressBar, QLineEdit
 import time
-import ibhlinkdriver
-import IBHconst
+import ibh_link_client
+import ibh_const
 import data_plc
 from data_plc import BaseData, WritableBitData, WritableNumericData, variable_address, visu_variable, Action, DataType
 from collections import namedtuple, deque
@@ -268,20 +268,20 @@ class Manager(QObject):
             _d_list[k] = list(v.keys())
 
         if len(_m_list):
-            for l in self.divide_lists_of_address(_m_list, IBHconst.IBHLINK_READ_MAX):
+            for l in self.divide_lists_of_address(_m_list, ibh_const.IBHLINK_READ_MAX):
                 self._processed_readout_list.append(memory_chunk_type('M', l[0], 0, len(l)))
 
         if len(_i_list):
-            for l in self.divide_lists_of_address(_i_list, IBHconst.IBHLINK_READ_MAX):
+            for l in self.divide_lists_of_address(_i_list, ibh_const.IBHLINK_READ_MAX):
                 self._processed_readout_list.append(memory_chunk_type('I', l[0], 0, len(l)))
 
         if len(_q_list):
-            for l in self.divide_lists_of_address(_q_list, IBHconst.IBHLINK_READ_MAX):
+            for l in self.divide_lists_of_address(_q_list, ibh_const.IBHLINK_READ_MAX):
                 self._processed_readout_list.append(memory_chunk_type('Q', l[0], 0, len(l)))
 
         for k,v in _d_list.items():
             if len(v):
-                for l in self.divide_lists_of_address(v, IBHconst.IBHLINK_READ_MAX):
+                for l in self.divide_lists_of_address(v, ibh_const.IBHLINK_READ_MAX):
                     self._processed_readout_list.append(memory_chunk_type('D', k, l[0], len(l)))
 
     @pyqtSlot()
@@ -377,7 +377,7 @@ class Worker(QObject):
     """
     def __init__(self, ip_address, mpi_address):
         super().__init__()
-        self._driver = ibhlinkdriver.IbhLinkDriver(ip_address, IBHconst.IBHLINK_PORT, mpi_address)
+        self._driver = ibh_link_client.IbhLinkDriver(ip_address, ibh_const.IBHLINK_PORT, mpi_address)
         self._driver.timeout = 0
         self._stay_connected = False
         self._change_driver = False
@@ -427,7 +427,7 @@ class Worker(QObject):
                 if vals:
                     self.read_bytes_signal.emit(vals)
 
-        except ibhlinkdriver.DriverError as e:
+        except ibh_link_client.DriverError as e:
             logger.warning(str(e))
 
         if not self.stay_connected:
@@ -449,7 +449,7 @@ class Worker(QObject):
             if self._driver.connected:
                 self._driver.write_vals(data_type, data_address, offset, size, val)
                 self.write_bytes_signal.emit()
-        except ibhlinkdriver.DriverError as e:
+        except ibh_link_client.DriverError as e:
             logger.warning(str(e))
         finally:
             if not self.stay_connected:
@@ -465,7 +465,7 @@ class Worker(QObject):
                 self.plc_state_signal.emit(status)
             else:
                 self.status_signal.emit(Status.no_connection)
-        except ibhlinkdriver.DriverError as e:
+        except ibh_link_client.DriverError as e:
             self.failure_signal.emit(str(e))
             self.plc_state_signal.emit('UNKNOWN')
         except ConnectionError:
@@ -492,7 +492,7 @@ class Worker(QObject):
                 except IndexError:
                     break
             self.queued_read_out_finished.emit()
-        except (ConnectionError, ibhlinkdriver.DriverError):
+        except (ConnectionError, ibh_link_client.DriverError):
             self.status_signal.emit(Status.no_connection)
 
     def queued_write_in(self):
@@ -519,7 +519,7 @@ class Worker(QObject):
                 except IndexError:
                     break
             self.queued_write_in_finished.emit()
-        except (ConnectionError, ibhlinkdriver.DriverError):
+        except (ConnectionError, ibh_link_client.DriverError):
             self.status_signal.emit(Status.no_connection)
 
     failure_signal = pyqtSignal(str)
