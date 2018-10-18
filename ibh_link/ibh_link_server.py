@@ -1,10 +1,9 @@
 import socket
 import threading
 import ctypes
-import data_plc
-from safe_connector import SafeConnector
-import ibh_const
-from ibh_server_data import IbhDataCollection, data_item
+from ibh_link.safe_connector import SafeConnector
+from ibh_link import ibh_const, data_plc
+from ibh_link.ibh_server_data import IbhDataCollection, data_item
 from enum import Enum
 import time
 

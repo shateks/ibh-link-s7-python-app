@@ -1,6 +1,5 @@
 import socket
-import ibh_link_client
-import ibh_const as c
+from ibh_link import ibh_const as c, ibh_link_client
 from unittest import TestCase,mock
 import faulthandler
 

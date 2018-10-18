@@ -1,7 +1,7 @@
 import logging
 import socket
 import ctypes
-import ibh_const
+from ibh_link import ibh_const
 
 logger = logging.getLogger(__name__)
 

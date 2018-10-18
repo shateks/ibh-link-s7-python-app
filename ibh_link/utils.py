@@ -1,9 +1,7 @@
 import configparser
 import re
 from PyQt5.QtWidgets import QWidget
-from data_plc import visu_variable, variable_range, DataType, Action, variable_full_description, DEFAULT_RANGE
-import data_plc
-from collections import namedtuple
+from ibh_link.data_plc import variable_range, DataType, Action, variable_full_description, DEFAULT_RANGE
 
 SUPPORTED_WIDGETS = ['QPushButton','QLabel', 'QSlider', 'QDial', 'QProgressBar', 'QLineEdit']
 # SUPPORTED_WIDGETS = ['QRadioButton','QPushButton','QLabel','QLineEdit','QCheckBox']

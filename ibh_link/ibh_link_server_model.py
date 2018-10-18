@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIntValidator
 
-from ibh_server_data import IbhDataCollection, BaseItem, ValueItem
+from ibh_link.ibh_server_data import IbhDataCollection, BaseItem, ValueItem
 from PyQt5.QtCore import QModelIndex, QAbstractItemModel, QSortFilterProxyModel
 from PyQt5.QtWidgets import QItemDelegate, QLineEdit
 

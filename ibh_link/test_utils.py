@@ -1,8 +1,8 @@
 import unittest
-from ddt import ddt, data, idata, unpack
+from ddt import ddt, idata
 
-import utils
-from data_plc import DataType, Action, DEFAULT_RANGE
+from ibh_link import utils
+from ibh_link.data_plc import DataType, Action, DEFAULT_RANGE
 
 parser_set_of_data = [
     (('m200.1'),     ('M', 200, None, 1, DataType.BOOL, None, None)),

@@ -1,15 +1,13 @@
 import logging
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, Qt, QLocale
-from PyQt5.QtGui import QIntValidator, QDoubleValidator, QValidator
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QLocale
+from PyQt5.QtGui import QDoubleValidator, QValidator
 from PyQt5.QtWidgets import QLabel, QPushButton, QSlider, QDial, QProgressBar, QLineEdit
 import time
-import ibh_link_client
-import ibh_const
-import data_plc
-from data_plc import BaseData, WritableBitData, WritableNumericData, variable_address, visu_variable, Action, DataType
+from ibh_link import ibh_const, ibh_link_client
+from ibh_link.data_plc import BaseData, WritableBitData, WritableNumericData, Action, DataType
 from collections import namedtuple, deque
 from enum import Enum
-from utils import variable_full_description
+from ibh_link.utils import variable_full_description
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 import unittest
-from ddt import ddt, data, idata, unpack
 
-import ibh_qt_adapter
+from ibh_link import ibh_qt_adapter
+
 
 class TestDivideListsOfAddress(unittest.TestCase):
 
