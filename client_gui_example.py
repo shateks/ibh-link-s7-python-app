@@ -54,7 +54,7 @@ class MainWindow(QWidget):
         self.ui.btn_write.clicked.connect(self.write_bytes)
 
         self.ui.btn_get_plc_status.clicked.connect(lambda: self._worker.get_plc_status())
-        self._worker.get_plc_status_signal.connect(lambda l: self.ui.te_log.append('PLC is in {} state.'.format(l)))
+        self._worker.plc_state_signal.connect(lambda l: self.ui.te_log.append('PLC is in {} state.'.format(l)))
 
         self._worker.failure_signal.connect(lambda s: self.ui.te_log.append(s))
 
@@ -96,7 +96,7 @@ class MainWindow(QWidget):
     def write_bytes(self):
         try:
             (area, address, offset, size) = self.collect_variable_parameter()
-            val = int(self.ui.le_variable_value.text())
+            val = int(self.ui.le_variable_value.text()).to_bytes(length=size,byteorder='big',signed=False)
             self._worker.write_bytes(area, address, offset, size, val)
         except ValueError as e:
             self.log_error(str(e))

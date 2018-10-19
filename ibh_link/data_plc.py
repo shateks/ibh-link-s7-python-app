@@ -194,7 +194,7 @@ class BaseData:
     def bytes_list_to_variable(self, list_of_bytes):
         return self._plc_to_visu_conv(list_of_bytes)
 
-    def variable_to_bytes_list(self, *args):
+    def variable_to_bytes(self, *args):
         return self._visu_to_plc_conv(*args)
 
 class WritableData(BaseData):

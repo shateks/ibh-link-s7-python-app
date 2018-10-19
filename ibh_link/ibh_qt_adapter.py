@@ -432,14 +432,14 @@ class Worker(QObject):
             self._driver.disconnect_plc()
         return vals
 
-    @pyqtSlot(str, int, int, int, int)
+    @pyqtSlot(str, int, int, int, bytes)
     def write_bytes(self, data_type, data_address, offset, size, val):
         """
         :param data_type: string - M, E or I, A or Q, D
         :param data_address: int - number of data
         :param offset: int - in case of type 'D' number of DB block
         :param size: int - number of bytes to read beginning from target 'data_number'
-        :param val: int - value to be writen
+        :param val: bytes - bytes to be writen
         """
         try:
             if not self._driver.connected:
@@ -503,16 +503,16 @@ class Worker(QObject):
                         if data.action == Action.TOGGLE:
                             logic_val = data.bytes_list_to_variable(value_list)
                             if logic_val == True:
-                                result_list = data.variable_to_bytes_list(value_list, False)
+                                result_list = data.variable_to_bytes(value_list, False)
                             else:
-                                result_list = data.variable_to_bytes_list(value_list, True)
+                                result_list = data.variable_to_bytes(value_list, True)
                         elif data.action == Action.SET:
-                            result_list = data.variable_to_bytes_list(value_list, True)
+                            result_list = data.variable_to_bytes(value_list, True)
                         elif data.action == Action.RESET:
-                            result_list = data.variable_to_bytes_list(value_list, False)
+                            result_list = data.variable_to_bytes(value_list, False)
                         self.write_bytes(chunk.area, chunk.address, chunk.offset, chunk.size, result_list)
                     elif type(data) is WritableNumericData:
-                        result_list = data.variable_to_bytes_list(val)
+                        result_list = data.variable_to_bytes(val)
                         self.write_bytes(chunk.area, chunk.address, chunk.offset, chunk.size, result_list)
                 except IndexError:
                     break
