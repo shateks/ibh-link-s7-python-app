@@ -419,15 +419,17 @@ class Worker(QObject):
         try:
             if not self._driver.connected:
                 self._driver.connect_plc()
-
             if self._driver.connected:
                 vals = self._driver.read_vals(data_type, data_address, offset, size)
                 if vals:
                     self.read_bytes_signal.emit(vals)
-
+        except (ConnectionError, ibh_link_client.SocketUnexpectedDisconnected) as e:
+            logger.error(str(e))
+            self._driver.drop_connection()
+            raise e
         except ibh_link_client.DriverError as e:
-            logger.warning(str(e))
-
+            logger.error(str(e))
+            raise e
         if not self.stay_connected:
             self._driver.disconnect_plc()
         return vals
@@ -447,8 +449,13 @@ class Worker(QObject):
             if self._driver.connected:
                 self._driver.write_vals(data_type, data_address, offset, size, val)
                 self.write_bytes_signal.emit()
+        except (ConnectionError, ibh_link_client.SocketUnexpectedDisconnected) as e:
+            logger.error(str(e))
+            self._driver.drop_connection()
+            raise e
         except ibh_link_client.DriverError as e:
-            logger.warning(str(e))
+            logger.error(str(e))
+            raise e
         finally:
             if not self.stay_connected:
                 self._driver.disconnect_plc()
@@ -463,12 +470,13 @@ class Worker(QObject):
                 self.plc_state_signal.emit(status)
             else:
                 self.status_signal.emit(Status.no_connection)
-        except ibh_link_client.DriverError as e:
-            self.failure_signal.emit(str(e))
-            self.plc_state_signal.emit('UNKNOWN')
-        except ConnectionError:
+        except (ConnectionError, ibh_link_client.SocketUnexpectedDisconnected) as e:
+            logger.error(str(e))
             self._driver.drop_connection()
-            self.status_signal.emit(Status.no_connection)
+            raise e
+        except ibh_link_client.DriverError as e:
+            logger.error(str(e))
+            raise e
         finally:
             if not self.stay_connected:
                 self._driver.disconnect_plc()
