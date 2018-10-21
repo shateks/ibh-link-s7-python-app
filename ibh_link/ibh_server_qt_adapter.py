@@ -39,33 +39,32 @@ class Worker(QObject):
 
     @pyqtSlot(tuple)
     def item_added(self, tup):
-    # def item_added(self, type: EventType, area: str):
         """
         Only purpose of slot is redirect signal from QtNotifier, signal is emitted when item is added to
         collection of data (IbhDataCollection).
-        :param type: type of event added or changed
-        :param area: memory area D,M,I or Q
+        :param tup: EventType, memory area D,M,I or Q
         :return:
         """
 
         type, area = tup
         root = QModelIndex()
         if type == EventType.added:
-            count = self._model.rowCount(QModelIndex())
+            count = self._model.rowCount(root)
             for row in range(count):
                 index = self._model.index(row,0,root)
                 if self._model.data(index, Qt.DisplayRole) == area:
                     self._model.rowsInserted.emit(index,0,0)
                     break
         elif type == EventType.changed:
-            count = self._model.rowCount(QModelIndex())
+            count = self._model.rowCount(root)
             for row in range(count):
                 index = self._model.index(row, 0, root)
                 if self._model.data(index, Qt.DisplayRole) == area:
+                    index1 = self._model.index(0,2,index)
                     count2 = index.internalPointer().childCount()
                     index2 = self._model.index(count2-1,2,index)
-                    self._dataChanged.emit(index2, index2)
-
+                    self._dataChanged.emit(index1, index2)
+                    break
 
 
     started = pyqtSignal()

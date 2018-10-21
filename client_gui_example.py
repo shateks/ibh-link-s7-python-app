@@ -49,27 +49,30 @@ class MainWindow(QWidget):
         self._thread.start()
 
         self.ui.btn_read.clicked.connect(self.read_bytes)
-        self._worker.read_bytes_signal.connect(lambda l: self.ui.te_log.append(str(l)))
+        self._worker.read_bytes_signal.connect(lambda l: self.ui.logging_window.append(str(l)))
 
         self.ui.btn_write.clicked.connect(self.write_bytes)
 
-        self.ui.btn_get_plc_status.clicked.connect(lambda: self._worker.get_plc_status())
-        self._worker.plc_state_signal.connect(lambda l: self.ui.te_log.append('PLC is in {} state.'.format(l)))
+        self.ui.btn_get_plc_status.clicked.connect(self.get_plc_state)
+        self._worker.plc_state_signal.connect(lambda l: self.ui.logging_window.append('PLC is in {} state.'.format(l)))
 
-        self._worker.failure_signal.connect(lambda s: self.ui.te_log.append(s))
+        self._worker.failure_signal.connect(lambda s: self.ui.logging_window.append(s))
 
-        self.ui.le_ip_address.editingFinished.connect(
-            lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
-        self.ui.le_ip_port.editingFinished.connect(
-            lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
-        self.ui.le_mpi_address.editingFinished.connect(
-            lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
+        # self.ui.le_ip_address.editingFinished.connect(
+        #     lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
+        # self.ui.le_ip_port.editingFinished.connect(
+        #     lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
+        # self.ui.le_mpi_address.editingFinished.connect(
+        #     lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
 
-        self.ui.btn_clear.clicked.connect(self.ui.te_log.clear)
+        self.ui.btn_clear.clicked.connect(self.ui.logging_window.clear)
 
 
     def collect_communication_parameter(self):
-        return (self.ui.le_ip_address.text(), int(self.ui.le_ip_port.text()), int(self.ui.le_mpi_address.text()))
+        try:
+            return (self.ui.le_ip_address.text(), int(self.ui.le_ip_port.text()), int(self.ui.le_mpi_address.text()))
+        except ValueError as e:
+            self.log_error(str(e))
 
     def collect_variable_parameter(self):
         index = self.ui.cb_address_area.currentIndex()
@@ -88,24 +91,41 @@ class MainWindow(QWidget):
 
     def read_bytes(self):
         try:
+            self._worker.change_communication_parameters(*self.collect_communication_parameter())
             (area, address, offset, size) = self.collect_variable_parameter()
             self._worker.read_bytes(area, address, offset, size)
-        except ValueError as e:
+        except (ValueError, ConnectionError, ibh_link_client.DriverError) as e:
+            pass
+        except Exception as e:
             self.log_error(str(e))
 
     def write_bytes(self):
         try:
+            self._worker.change_communication_parameters(*self.collect_communication_parameter())
             (area, address, offset, size) = self.collect_variable_parameter()
             val = int(self.ui.le_variable_value.text()).to_bytes(length=size,byteorder='big',signed=False)
             self._worker.write_bytes(area, address, offset, size, val)
-        except ValueError as e:
+        except (ConnectionError, ibh_link_client.DriverError) as e:
+            pass
+        except (OverflowError, ValueError) as e:
+            self.log_error(str(e))
+        except Exception as e:
+            self.log_error(str(e))
+
+    def get_plc_state(self):
+        try:
+            self._worker.change_communication_parameters(*self.collect_communication_parameter())
+            self._worker.get_plc_status()
+        except (ValueError, ConnectionError, ibh_link_client.DriverError) as e:
+            pass
+        except Exception as e:
             self.log_error(str(e))
 
     @pyqtSlot(str)
     def log_error(self, msg):
-        self.ui.te_log.setTextColor(Qt.red)
-        self.ui.te_log.append(msg)
-        self.ui.te_log.setTextColor(Qt.black)
+        self.ui.logging_window.setTextColor(Qt.red)
+        self.ui.logging_window.append(msg)
+        self.ui.logging_window.setTextColor(Qt.black)
 
 
 class QTextEdtitLoggerHandler(logging.Handler):

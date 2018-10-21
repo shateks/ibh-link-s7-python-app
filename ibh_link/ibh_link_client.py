@@ -156,13 +156,8 @@ class IbhLinkDriver:
         self.msg_number += 1
         msg_length = ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE
 
-        try:
-            self.sendData(bytes(msg_tx)[:msg_length])
-            raw_bytes = self.receiveData()
-        except ConnectionError as e:
-            # self.connected = False
-            logger.error(e)
-            raise
+        self.sendData(bytes(msg_tx)[:msg_length])
+        raw_bytes = self.receiveData()
 
         msg_rx = ibh_const.IBHLinkMSG()
         msg_rx.receiveSome(raw_bytes)

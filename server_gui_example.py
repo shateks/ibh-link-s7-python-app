@@ -60,7 +60,6 @@ class IbhLinkServerGui(QWidget):
     @pyqtSlot()
     def test_function(self):
         self.ui.treeView.repaint()
-        # self.ui.treeView.header().headerDataChanged(Qt.Vertical, 0, 3)
         self.ui.treeView.update(QtCore.QModelIndex())
 
     @pyqtSlot()
@@ -79,6 +78,7 @@ class IbhLinkServerGui(QWidget):
     def started_handler(self):
         self.ui.btnStart.setDisabled(True)
         self.ui.btnStop.setEnabled(True)
+
     @pyqtSlot()
     def stoped_handler(self):
         self.ui.btnStart.setEnabled(True)

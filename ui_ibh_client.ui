@@ -284,6 +284,9 @@
              <property name="maxLength">
               <number>32</number>
              </property>
+             <property name="cursorPosition">
+              <number>0</number>
+             </property>
             </widget>
            </item>
           </layout>
@@ -396,7 +399,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
-       <widget class="QTextEdit" name="te_log">
+       <widget class="QTextEdit" name="logging_window">
         <property name="readOnly">
          <bool>true</bool>
         </property>
