@@ -265,7 +265,7 @@ class ConfReader:
     def __init__(self):
         self._configuration = configparser.ConfigParser()
         # TODO: use context manager, or try block
-        self._configuration.read('config.ini')
+        self._configuration.read('../config.ini')
 
     @property
     def screens(self):
@@ -280,16 +280,31 @@ class ConfReader:
 
     @property
     def plc_tcp_ip_port(self):
-        return self._configuration['PLC_ADDRESS']['port']
+        try:
+            return int(self._configuration['PLC_ADDRESS']['port'])
+        except:
+            return None
 
     @property
     def plc_mpi_address(self):
-        return self._configuration['PLC_ADDRESS']['mpi']
+        try:
+            return int(self._configuration['PLC_ADDRESS']['mpi'])
+        except:
+            return None
 
     @property
     def refresh_time(self):
-        return self._configuration['REFRESH']['time']
+        try:
+            return float(self._configuration['REFRESH']['time'])
+        except:
+            return None
 
+    @property
+    def console(self):
+        try:
+            return bool(self._configuration['DEBUG']['console'])
+        except:
+            return False
 
 if __name__ == '__main__':
     c = ConfReader()
@@ -298,3 +313,4 @@ if __name__ == '__main__':
     print(c.plc_tcp_ip_port)
     print(c.plc_mpi_address)
     print(c.refresh_time)
+    print(c.console)
