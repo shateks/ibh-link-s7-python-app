@@ -53,7 +53,7 @@ class Model(QtCore.QAbstractItemModel):
 
     def hasChildren(self, parent=None, *args, **kwargs):
         if parent.isValid():
-            return self.rowCount(parent)
+            return 0 < self.rowCount(parent)
         else:
             return super().hasChildren(parent)
 
@@ -143,16 +143,22 @@ class ChangeByteDelegate(QItemDelegate):
 
 class ProxySortModel(QSortFilterProxyModel):
 
-    def lessThan(self, left_index: QModelIndex, right_index: QModelIndex):
-        left_item = left_index.internalPointer()
-        right_item = right_index.internalPointer()
-        if left_item.childCount() == 0:
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
-            if left_item.name() < right_item.name():
-                return True
+    def lessThan(self, left_index: QModelIndex, right_index: QModelIndex):
+        try:
+            left_item = left_index.internalPointer()
+            right_item = right_index.internalPointer()
+            if left_item.childCount() == 0:
+
+                if left_item.name() < right_item.name():
+                    return True
+                else:
+                    return False
             else:
                 return False
-        else:
+        except AttributeError:
             return False
 
     def sort(self, column, order=None):

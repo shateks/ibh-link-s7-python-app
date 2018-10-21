@@ -227,23 +227,18 @@ class IbhLinkServer(threading.Thread):
         :return: bytes
         """
         try:
+            data_added_flag = False
             val = list()
-            if area == 'D':
-                for i in range(size):
+            for i in range(size):
+                if area == 'D':
                     _item = data_item(area, data_address, db_offset + i)
-                    _exist = self.collection.is_in_collection(_item)
-                    val.append(self.collection.get(_item))
-            else:
-                for i in range(size):
+                else:
                     _item = data_item(area, data_address + i, 0)
-                    _exist = self.collection.is_in_collection(_item)
-                    val.append(self.collection.get(_item))
-
-            if self.connector and not _exist:
+                if not self.collection.is_in_collection(_item):
+                    data_added_flag = True
+                val.append(self.collection.get(_item))
+            if self.connector and data_added_flag:
                 self.connector.emit(EventType.added, area)
-            # elif self.connector and _exist:
-            #     self.connector.emit(EventType.changed, area)
-
             msg.ln = ibh_const.TELE_HEADER_SIZE + msg.data_cnt
             ctypes.memmove(ctypes.addressof(msg.d), bytes(val), len(val))
         except ValueError:
@@ -265,23 +260,24 @@ class IbhLinkServer(threading.Thread):
         :return: bytes
         """
         try:
+            data_added_flag = False
+            data_changed_flag = False
             val = list(array[:size])
-            if area == 'D':
-                for i in range(size):
+            for i in range(size):
+                if area == 'D':
                     _item = data_item(area, data_address, db_offset + i)
-                    _exist = self.collection.is_in_collection(_item)
-                    self.collection.set(_item, val[i])
-            else:
-                for i in range(size):
+                else:
                     _item = data_item(area, data_address + i, 0)
-                    _exist = self.collection.is_in_collection(_item)
-                    self.collection.set(data_item(area, data_address + i, 0), val[i])
-
-            if self.connector and not _exist:
-                self.connector.emit(EventType.added, area)
-            elif self.connector and _exist:
-                self.connector.emit(EventType.changed, area)
-
+                if self.collection.is_in_collection(_item):
+                    data_changed_flag = True
+                else:
+                    data_added_flag = True
+                self.collection.set(_item, val[i])
+            if self.connector:
+                if data_added_flag:
+                    self.connector.emit(EventType.added, area)
+                if data_changed_flag:
+                    self.connector.emit(EventType.changed, area)
             msg.ln = ibh_const.TELE_HEADER_SIZE
         except ValueError:
             msg.ln = ibh_const.TELE_HEADER_SIZE
