@@ -1,29 +1,9 @@
 import configparser
+import ipaddress
 import re
-from PyQt5.QtWidgets import QWidget
+# from PyQt5.QtWidgets import QWidget
 from ibh_link.data_plc import variable_range, DataType, Action, variable_full_description, DEFAULT_RANGE
 
-SUPPORTED_WIDGETS = ['QPushButton','QLabel', 'QSlider', 'QDial', 'QProgressBar', 'QLineEdit']
-# SUPPORTED_WIDGETS = ['QRadioButton','QPushButton','QLabel','QLineEdit','QCheckBox']
-
-"""
-QLabel - only for reading
-    slot: setText()
-    
-QPushButton - can be for writing only (checkable=false), and 
-    property: checkable, check by: isCheckable()
-    slot: setChecked(bool)
-    signal: clicked(bool checked = false) "If the button is checkable, checked is true
-                            if the button is checked, or false if the button is unchecked."
-"""
-
-
-
-def find_supported_widgets(widget):
-    w_list = widget.findChildren(QWidget)
-    for w in w_list:
-        if w.metaObject().className() in SUPPORTED_WIDGETS:
-            yield w
 
 def recursive_dict_fromkeys(recursive_dict: dict) -> dict:
     result = dict()
@@ -135,9 +115,10 @@ class PlcVariableParser:
 
     def parse(self, str_val):
         """
-        Method for parsing strings, for instance: 'db100.dbx10.2' to tuple ('D',100,10,2,'BOOL')
-        :param val:
-        :return: tuple(area,db_number,address,bit_nr,data_type)
+        Method for parsing strings, for instance: 'db100.dbx10.2' to named tuple 'variable_full_description'.
+        :param str_val: str
+        :raises ValueError
+        :return: variable_full_description
         """
         area = None
         offset = None
@@ -260,13 +241,14 @@ class PlcVariableParser:
 
 class ConfReader:
     """
-    Class for reading configuration parameters from defined file "config.ini"
+    Class for reading configuration parameters from defined file location
     """
-    def __init__(self):
+    def __init__(self, location:str):
         self._configuration = configparser.ConfigParser()
         # TODO: use context manager, or try block
-        self._configuration.read('../config.ini')
-
+        self._configuration.read(location)
+        if len(self._configuration.sections()) == 0:
+            raise FileExistsError('File in location \'{}\' not exist or is empty'.format(location))
     @property
     def screens(self):
         """
@@ -276,38 +258,61 @@ class ConfReader:
 
     @property
     def plc_tcp_ip_address(self):
-        return self._configuration['PLC_ADDRESS']['address']
+        try:
+            val = self._configuration['PLC_ADDRESS']['address']
+            addr = ipaddress.ip_address(val)
+            if addr.version == 4:
+                return val
+            else:
+                raise ValueError('Address not in 4-th version :{}'.format(val))
+        except ValueError as e:
+            raise ValueError('Configuration file bad entry: TCP/IP address.\n{}'.format(e))
+        except Exception as e:
+            raise Exception('Configuration file bad entry: TCP/IP address.')
 
     @property
     def plc_tcp_ip_port(self):
         try:
-            return int(self._configuration['PLC_ADDRESS']['port'])
-        except:
-            return None
+            val = int(self._configuration['PLC_ADDRESS']['port'])
+            if val >= 0 and val <= 65535:
+                return val
+            else:
+                raise ValueError('No valid range of port {}.'.format(val))
+        except Exception as e:
+            raise Exception('Configuration file bad entry: TCP/IP port number.\n{}'.format(e))
 
     @property
     def plc_mpi_address(self):
         try:
             return int(self._configuration['PLC_ADDRESS']['mpi'])
-        except:
-            return None
+        except Exception as e:
+            raise Exception('Configuration file bad entry: MPI plc address.')
 
     @property
     def refresh_time(self):
-        try:
-            return float(self._configuration['REFRESH']['time'])
-        except:
-            return None
+        val = float(self._configuration['REFRESH']['time'])
+        if val < 100:
+            raise ValueError("Please give refresh time grater than 100ms, given: {}".format(val))
+        return val
 
     @property
     def console(self):
         try:
-            return bool(self._configuration['DEBUG']['console'])
-        except:
-            return False
+            val = self._configuration['DEBUG']['console'].upper()
+            if val in ('FALSE', 'NO', '0', 'NONE', ''):
+                return False
+            else:
+                return True
+        except Exception as e:
+            raise Exception('Configuration file bad entry: [DEBUG] console.')
+
+def enable_crash_report(file_name):
+    import faulthandler
+    f1 = open(file_name, 'w')
+    faulthandler.enable(file=f1)
 
 if __name__ == '__main__':
-    c = ConfReader()
+    c = ConfReader('../config.ini')
     print(c.screens)
     print(c.plc_tcp_ip_address)
     print(c.plc_tcp_ip_port)
