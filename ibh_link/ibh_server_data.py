@@ -1,4 +1,5 @@
 from collections import namedtuple
+import ibh_link.ibh_const as ibh
 
 data_item = namedtuple('data_item', ['area', 'address', 'offset'])
 
@@ -68,6 +69,15 @@ class IbhDataCollection():
         BaseItem('I', self._collection)
         BaseItem('Q', self._collection)
         BaseItem('D', self._collection)
+        self._plc_state = ibh.OP_STATUS_STOP
+
+    @property
+    def plc_state(self):
+        return self._plc_state
+
+    @plc_state.setter
+    def plc_state(self, val: int):
+        self._plc_state = val
 
     def get_root(self):
         return self._collection

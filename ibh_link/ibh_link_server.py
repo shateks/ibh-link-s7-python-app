@@ -33,7 +33,6 @@ class IbhLinkServer(threading.Thread):
         self.connector = connector
         if mpi_addr < 0 or mpi_addr > 126:
             raise ValueError("mpi_addr < 0 or mpi_addr > 126")
-        self.plc_status = ibh_const.OP_STATUS_STOP
         self.mpi_address = mpi_addr
         self.msg_number = 0
         self.max_recv_bytes = 512
@@ -88,45 +87,6 @@ class IbhLinkServer(threading.Thread):
                 conn.close()
         conn.close()
 
-    # def disconnect_plc(self):
-    #     if not self.connected:
-    #         return
-    #
-    #     msg_tx = IBHconst.IBHLinkMSG(rx=IBHconst.MPI_TASK, tx=IBHconst.HOST, nr=self.msg_number,
-    #                                  ln=IBHconst.MSG_HEADER_SIZE, b=IBHconst.MPI_DISCONNECT,
-    #                                  device_adr=self.mpi_address)
-    #     self.msg_number += 1
-    #
-    #     msg_length = IBHconst.MSG_HEADER_SIZE + IBHconst.TELE_HEADER_SIZE
-    #
-    #     self.sendData(bytes(msg_tx)[:msg_length])
-    #
-    #     raw_bytes = self.receiveData()
-    #
-    #     msg_rx = IBHconst.IBHLinkMSG()
-    #     msg_rx.receiveSome(raw_bytes)
-    #
-    #     self.basic_telegram_check(msg_tx, msg_rx, IBHconst.TELE_HEADER_SIZE)
-    #
-    #     self._socket.shutdown(socket.SHUT_RDWR)
-    #     self._socket.close()
-    #     self.connected = False
-    #
-    # @property
-    # def str_plc_status(self) -> str:
-    #     if self.plc_status == 0:
-    #         return 'STOP'
-    #     elif self.plc_status == 1:
-    #         return 'START'
-    #     elif self.plc_status == 2:
-    #         return 'RUN'
-    #     else:
-    #         return 'UNKNOWN'
-    #
-    # def set_plc_status(self, val):
-    #     self.plc_status = val
-
-
     def produce_respose(self, data:bytes, disconnect:threading.Event) -> bytes:
         msg_rx = ibh_const.IBHLinkMSG()
         msg_rx.receiveSome(data)
@@ -168,7 +128,7 @@ class IbhLinkServer(threading.Thread):
 
         elif msg_rx.b == ibh_const.MPI_GET_OP_STATUS:
             msg_tx.ln = ibh_const.TELE_HEADER_SIZE + 2
-            ctypes.memmove(ctypes.addressof(msg_tx.d), data_plc._to_plc_word_(self.plc_status), 2)
+            ctypes.memmove(ctypes.addressof(msg_tx.d), self.collection.plc_state.to_bytes(2, byteorder='little'), 2)
             return bytes(msg_tx)[:ibh_const.MSG_HEADER_SIZE + msg_tx.ln]
 
         elif msg_rx.b == ibh_const.MPI_READ_WRITE_M:
