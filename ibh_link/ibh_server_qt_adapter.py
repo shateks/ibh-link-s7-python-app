@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, Qt, QModelIndex, QAbstractItemModel
-from ibh_link.ibh_link_server import IbhLinkServer, IbhDataCollection, EventType
-from ibh_link.ibh_link_server_model import Model
+from ibh_link.ibh_server import IbhLinkServer, IbhDataCollection, EventType
+from ibh_link.ibh_server_model import Model
 
 class ___model(QAbstractItemModel):
 

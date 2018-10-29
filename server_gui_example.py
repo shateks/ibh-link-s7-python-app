@@ -5,7 +5,7 @@ from ui_ibh_server import *
 from PyQt5.QtCore import QObject, QThread, pyqtSlot, QModelIndex
 from PyQt5.QtWidgets import QWidget, QApplication
 from ibh_link.ibh_server_data import *
-from ibh_link.ibh_link_server_model import Model, ChangeByteDelegate, ProxySortModel
+from ibh_link.ibh_server_model import Model, ChangeByteDelegate, ProxySortModel
 from ibh_link.ibh_server_qt_adapter import Worker
 import faulthandler
 import PyQt5

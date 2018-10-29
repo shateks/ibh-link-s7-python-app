@@ -3,7 +3,7 @@ from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QLocale
 from PyQt5.QtGui import QDoubleValidator, QValidator
 from PyQt5.QtWidgets import QLabel, QPushButton, QSlider, QDial, QProgressBar, QLineEdit, QWidget
 import time
-from ibh_link import ibh_const, ibh_link_client
+from ibh_link import ibh_const, ibh_client
 from ibh_link.data_plc import BaseData, WritableBitData, WritableNumericData, Action, DataType
 from collections import namedtuple, deque
 from enum import Enum
@@ -403,7 +403,7 @@ class Worker(QObject):
     """
     def __init__(self, ip_address, mpi_address):
         super().__init__()
-        self._driver = ibh_link_client.IbhLinkDriver(ip_address, ibh_const.IBHLINK_PORT, mpi_address)
+        self._driver = ibh_client.IbhLinkDriver(ip_address, ibh_const.IBHLINK_PORT, mpi_address)
         self._driver.timeout = 0
         self._stay_connected = False
         self._change_driver = False
@@ -451,11 +451,11 @@ class Worker(QObject):
                 vals = self._driver.read_vals(data_type, data_address, offset, size)
                 if vals:
                     self.read_bytes_signal.emit(vals)
-        except (ConnectionError, ibh_link_client.SocketUnexpectedDisconnected) as e:
+        except (ConnectionError, ibh_client.SocketUnexpectedDisconnected) as e:
             logger.error(str(e))
             self._driver.drop_connection()
             raise e
-        except ibh_link_client.DriverError as e:
+        except ibh_client.DriverError as e:
             logger.error(str(e))
             raise e
         if not self.stay_connected:
@@ -477,11 +477,11 @@ class Worker(QObject):
             if self._driver.connected:
                 self._driver.write_vals(data_type, data_address, offset, size, val)
                 self.write_bytes_signal.emit()
-        except (ConnectionError, ibh_link_client.SocketUnexpectedDisconnected) as e:
+        except (ConnectionError, ibh_client.SocketUnexpectedDisconnected) as e:
             logger.error(str(e))
             self._driver.drop_connection()
             raise e
-        except ibh_link_client.DriverError as e:
+        except ibh_client.DriverError as e:
             logger.error(str(e))
             raise e
         finally:
@@ -498,11 +498,11 @@ class Worker(QObject):
                 self.plc_state_signal.emit(status)
             else:
                 self.status_signal.emit(Status.no_connection)
-        except (ConnectionError, ibh_link_client.SocketUnexpectedDisconnected) as e:
+        except (ConnectionError, ibh_client.SocketUnexpectedDisconnected) as e:
             logger.error(str(e))
             self._driver.drop_connection()
             # raise e
-        except ibh_link_client.DriverError as e:
+        except ibh_client.DriverError as e:
             logger.error(str(e))
             # raise e
         finally:
@@ -526,7 +526,7 @@ class Worker(QObject):
                 except IndexError:
                     break
             self.queued_read_out_finished.emit()
-        except (ConnectionError, ibh_link_client.DriverError):
+        except (ConnectionError, ibh_client.DriverError):
             self.status_signal.emit(Status.no_connection)
 
     def queued_write_in(self):
@@ -553,7 +553,7 @@ class Worker(QObject):
                 except IndexError:
                     break
             self.queued_write_in_finished.emit()
-        except (ConnectionError, ibh_link_client.DriverError):
+        except (ConnectionError, ibh_client.DriverError):
             self.status_signal.emit(Status.no_connection)
 
     failure_signal = pyqtSignal(str)

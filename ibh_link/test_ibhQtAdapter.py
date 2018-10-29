@@ -1,6 +1,6 @@
 import unittest
 
-from ibh_link import ibh_qt_adapter
+from ibh_link import ibh_client_qt_adapter
 
 
 class TestDivideListsOfAddress(unittest.TestCase):
@@ -10,4 +10,4 @@ class TestDivideListsOfAddress(unittest.TestCase):
         self.out_expected = [[x for x in range(0,70)], [x for x in range(70,102)]]
 
     def test_divide_lists_of_address(self):
-        self.assertEqual(ibh_qt_adapter.Manager.divide_lists_of_address(self.input, 70), self.out_expected)
+        self.assertEqual(ibh_client_qt_adapter.Manager.divide_lists_of_address(self.input, 70), self.out_expected)

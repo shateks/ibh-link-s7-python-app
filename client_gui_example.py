@@ -2,7 +2,7 @@ import logging.handlers
 import sys, os
 from PyQt5.QtWidgets import QApplication, QWidget
 from ui_ibh_client import *
-from ibh_link.ibh_qt_adapter import *
+from ibh_link.ibh_client_qt_adapter import *
 from PyQt5.QtCore import QThread, Qt
 
 MEMORY_AREA_LIST = ['I - INPUT','Q - QUTPUT','M - MEMORY','DB - DATA BLOCK']
@@ -87,7 +87,7 @@ class MainWindow(QWidget):
             self._worker.change_communication_parameters(*self.collect_communication_parameter())
             (area, address, offset, size) = self.collect_variable_parameter()
             self._worker.read_bytes(area, address, offset, size)
-        except (ValueError, ConnectionError, ibh_link_client.DriverError) as e:
+        except (ValueError, ConnectionError, ibh_client.DriverError) as e:
             pass
         except Exception as e:
             self.log_error(str(e))
@@ -98,7 +98,7 @@ class MainWindow(QWidget):
             (area, address, offset, size) = self.collect_variable_parameter()
             val = int(self.ui.le_variable_value.text()).to_bytes(length=size,byteorder='big',signed=False)
             self._worker.write_bytes(area, address, offset, size, val)
-        except (ConnectionError, ibh_link_client.DriverError) as e:
+        except (ConnectionError, ibh_client.DriverError) as e:
             pass
         except (OverflowError, ValueError) as e:
             self.log_error(str(e))
@@ -109,7 +109,7 @@ class MainWindow(QWidget):
         try:
             self._worker.change_communication_parameters(*self.collect_communication_parameter())
             self._worker.get_plc_status()
-        except (ValueError, ConnectionError, ibh_link_client.DriverError) as e:
+        except (ValueError, ConnectionError, ibh_client.DriverError) as e:
             pass
         except Exception as e:
             self.log_error(str(e))
