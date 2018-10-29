@@ -1,6 +1,6 @@
-import random
 import sys
-
+import ibh_link.ibh_const as ibh
+from collections import OrderedDict
 from ui_ibh_server import *
 from PyQt5.QtCore import QObject, QThread, pyqtSlot, QModelIndex
 from PyQt5.QtWidgets import QWidget, QApplication
@@ -14,6 +14,8 @@ from ibh_link.safe_connector import SafeConnector
 f1 = open("crash.txt",'w')
 faulthandler.enable(file=f1)
 
+PLC_STATE = OrderedDict({ibh.OP_STATUS_STOP:'STOP', ibh.OP_STATUS_START:'START', ibh.OP_STATUS_RUN:'RUN',
+                         ibh.OP_STATUS_UNKNOWN:'UNKNOWN'})
 
 class IbhLinkServerGui(QWidget):
     def __init__(self):
@@ -28,13 +30,10 @@ class IbhLinkServerGui(QWidget):
         self.connector = SafeConnector()
         self._collection = IbhDataCollection()
 
-        # populate_example_collection(self._collection)
-
         self.model = Model(self._collection)
         self.proxy_model = ProxySortModel()
         self.proxy_model.setSourceModel(self.model)
         self.ui.treeView.setModel(self.proxy_model)
-        # self.ui.treeView.setModel(self.model)
         self.edit_delegate = ChangeByteDelegate(self.ui.treeView)
         self.ui.treeView.setItemDelegateForColumn(2, self.edit_delegate)
         self.ui.treeView.setSortingEnabled(True)
@@ -56,6 +55,9 @@ class IbhLinkServerGui(QWidget):
         self.stoped_handler()
 
         self.worker._dataChanged.connect(self.data_changed_proxy)
+
+        self.ui.combo_plc_state.addItems(PLC_STATE.values())
+        self.ui.combo_plc_state.currentIndexChanged.connect(self.combo_plc_changed_handler)
 
     @pyqtSlot()
     def test_function(self):
@@ -91,47 +93,17 @@ class IbhLinkServerGui(QWidget):
         else:
             self._collection.add_if_not_exist(False)
 
+    @pyqtSlot(int)
+    def combo_plc_changed_handler(self, index):
+        self._collection.plc_state = index
+
     @pyqtSlot(QModelIndex,QModelIndex)
     def data_changed_proxy(self, index1, index2):
         self.model.dataChanged.emit(index1,index2)
 
-def populate_example_collection(collection:IbhDataCollection):
-    collection.append(data_item('M',10,0),0xff)
-    collection.append(data_item('M',10,0),0x10)
-    collection.append(data_item('D',10,0),0xff)
-    collection.append(data_item('D',10,0),0x2)
-    collection.append(data_item('D',10,1),0x1f)
-    collection.append(data_item('D',100,0),0x1)
-    collection.append(data_item('D',100,0),0xee)
-    collection.append(data_item('D',100,1),0x1f)
-    collection.append(data_item('M',10,0),0x0)
-    collection.append(data_item('M',10,2),0x2)
-    collection.append(data_item('M',10,4),0x4)
-    collection.append(data_item('M',10,6),0x6)
-    collection.append(data_item('M',1,0),0x10)
-    collection.append(data_item('M',2,0),0xff)
-    collection.append(data_item('I',1,0),0xf1)
-    collection.append(data_item('I',0,0),0x11)
-
-    collection.add_if_not_exist(1)
-    collection.get(data_item('M',10,0))
-    collection.get(data_item('D',11,0))
-    collection.set(data_item('M',10,0),77)
-    collection.set(data_item('M',11,0),17)
-    collection.set(data_item('M',12,0),27)
-    collection.set(data_item('M',13,0),37)
-    collection.set(data_item('D',10,0),17)
-    collection.set(data_item('D',13,0),33)
-
-    for i in range(0,100):
-        collection.set(data_item('D', 100, random.choice(range(200))), random.choice(range(255)))
-
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     self = IbhLinkServerGui()
-
-
     self.show()
     app.exec()
 

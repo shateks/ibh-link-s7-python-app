@@ -1,7 +1,7 @@
 import logging
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QLocale
 from PyQt5.QtGui import QDoubleValidator, QValidator
-from PyQt5.QtWidgets import QLabel, QPushButton, QSlider, QDial, QProgressBar, QLineEdit
+from PyQt5.QtWidgets import QLabel, QPushButton, QSlider, QDial, QProgressBar, QLineEdit, QWidget
 import time
 from ibh_link import ibh_const, ibh_link_client
 from ibh_link.data_plc import BaseData, WritableBitData, WritableNumericData, Action, DataType
@@ -9,7 +9,8 @@ from collections import namedtuple, deque
 from enum import Enum
 from ibh_link.utils import variable_full_description
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+# logger.setLevel(logging.DEBUG)
 
 class Status(Enum):
     ready = 1
@@ -43,6 +44,14 @@ Every tuple is single variable: one, two or four byte long.
 """
 
 memory_chunk_type = namedtuple('memory_chunk_type',['area', 'address', 'offset', 'size'])
+
+SUPPORTED_WIDGETS = ['QPushButton', 'QLabel', 'QSlider', 'QDial', 'QProgressBar', 'QLineEdit']
+
+def find_supported_widgets(widget):
+    w_list = widget.findChildren(QWidget)
+    for w in w_list:
+        if w.metaObject().className() in SUPPORTED_WIDGETS:
+            yield w
 
 class DoubleWordValidator(QValidator):
 
@@ -124,6 +133,8 @@ class Manager(QObject):
         :param q_obj_ref: QObject - Reference for QObject
         :return:
         """
+        read_subscriber_added_flag = False
+        write_trigger_added_flag = False
         if isinstance(q_obj_ref, QLabel):
             data = BaseData(full_description)
             if q_obj_ref.pixmap() is not None:
@@ -132,29 +143,35 @@ class Manager(QObject):
                 slot = lambda val: q_obj_ref.setText(str(val))
             self.populate_bytes_readout(data)
             self._visu_variable_list.append(self.visu_object(data, slot))
+            read_subscriber_added_flag = True
         elif isinstance(q_obj_ref, QPushButton):
             if full_description.action in (Action.TOGGLE, Action.RESET, Action.SET):
                 data = WritableBitData(full_description)
                 q_obj_ref.clicked.connect(lambda: self.populate_write_request_by_bit_variable(data))
+                write_trigger_added_flag = True
             else:
                 data = BaseData(full_description)
             if q_obj_ref.isCheckable():
                 slot = lambda val: self.slot_handling_qpushbutton(q_obj_ref, data, val)
                 self.populate_bytes_readout(data)
                 self._visu_variable_list.append(self.visu_object(data, slot))
+                read_subscriber_added_flag = True
         elif isinstance(q_obj_ref, QSlider) or isinstance(q_obj_ref, QDial):
             data = WritableNumericData(full_description)
             if full_description.action == Action.WRITE:
                 q_obj_ref.setTracking(False)
                 q_obj_ref.valueChanged.connect(lambda val: self.populate_write_request_by_int_variable(data, val))
+                write_trigger_added_flag = True
             slot = lambda val: self.slot_handling_qslider(q_obj_ref, data, val)
             self.populate_bytes_readout(data)
             self._visu_variable_list.append(self.visu_object(data, slot))
+            read_subscriber_added_flag = True
         elif isinstance(q_obj_ref, QProgressBar):
             slot = lambda val: q_obj_ref.setValue(int(val))
             data = BaseData(full_description)
             self.populate_bytes_readout(data)
             self._visu_variable_list.append(self.visu_object(data, slot))
+            read_subscriber_added_flag = True
         elif isinstance(q_obj_ref, QLineEdit):
             if full_description.action == Action.WRITE:
                 data = WritableNumericData(full_description)
@@ -168,13 +185,23 @@ class Manager(QObject):
                     validator = DoubleWordValidator(*data.value_range)
                     q_obj_ref.editingFinished.connect(lambda: self.populate_write_request_by_int_variable(data, int(q_obj_ref.text())))
                 q_obj_ref.setValidator(validator)
+                write_trigger_added_flag = True
             else:
                 data = BaseData(full_description)
                 q_obj_ref.setReadOnly(True)
             slot = lambda val: self.slot_handling_qlineedit(q_obj_ref, data, val)
             self.populate_bytes_readout(data)
             self._visu_variable_list.append(self.visu_object(data, slot))
+            read_subscriber_added_flag = True        
+        if not(read_subscriber_added_flag or write_trigger_added_flag):
+            logger.warning('No supported widget, or operation for: ' + q_obj_ref.objectName())
+        else:
+            if read_subscriber_added_flag:
+                logger.debug('Subscriber added for reading: ' + q_obj_ref.objectName())
+            if write_trigger_added_flag:
+                logger.debug('Added trigger for write operation: ' + q_obj_ref.objectName())
 
+        
     def slot_handling_qpushbutton(self, ref:QPushButton, data, val):
         if ref.isDown():
             return
@@ -365,6 +392,7 @@ class Manager(QObject):
     ask_for_plc_state = pyqtSignal()
     plc_state_signal = pyqtSignal(str)
     communication_status = pyqtSignal(Status)
+    variable_registred = pyqtSignal(variable_full_description,)
 
 
 class Worker(QObject):
@@ -473,10 +501,10 @@ class Worker(QObject):
         except (ConnectionError, ibh_link_client.SocketUnexpectedDisconnected) as e:
             logger.error(str(e))
             self._driver.drop_connection()
-            raise e
+            # raise e
         except ibh_link_client.DriverError as e:
             logger.error(str(e))
-            raise e
+            # raise e
         finally:
             if not self.stay_connected:
                 self._driver.disconnect_plc()

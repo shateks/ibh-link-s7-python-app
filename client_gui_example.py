@@ -58,13 +58,6 @@ class MainWindow(QWidget):
 
         self._worker.failure_signal.connect(lambda s: self.ui.logging_window.append(s))
 
-        # self.ui.le_ip_address.editingFinished.connect(
-        #     lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
-        # self.ui.le_ip_port.editingFinished.connect(
-        #     lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
-        # self.ui.le_mpi_address.editingFinished.connect(
-        #     lambda: self._worker.change_communication_parameters(*self.collect_communication_parameter()))
-
         self.ui.btn_clear.clicked.connect(self.ui.logging_window.clear)
 
 

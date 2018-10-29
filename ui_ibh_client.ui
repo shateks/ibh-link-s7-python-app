@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>776</width>
-    <height>883</height>
+    <width>628</width>
+    <height>654</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>IBH LINK CLIENT EXAMPLE</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_7">
    <item>
@@ -34,7 +34,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Ip address</string>
+           <string>IP address</string>
           </property>
          </widget>
         </item>
@@ -58,7 +58,7 @@
         <item>
          <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>Ip port</string>
+           <string>IP port</string>
           </property>
          </widget>
         </item>

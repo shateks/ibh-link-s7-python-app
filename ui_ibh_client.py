@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(776, 883)
+        Form.resize(628, 654)
         self.verticalLayout_7 = QtWidgets.QVBoxLayout(Form)
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.groupBox = QtWidgets.QGroupBox(Form)
@@ -218,12 +218,12 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
+        Form.setWindowTitle(_translate("Form", "IBH LINK CLIENT EXAMPLE"))
         self.groupBox.setTitle(_translate("Form", "Connection parameters"))
-        self.label.setText(_translate("Form", "Ip address"))
+        self.label.setText(_translate("Form", "IP address"))
         self.le_ip_address.setWhatsThis(_translate("Form", "MW9, WORD"))
         self.le_ip_address.setInputMask(_translate("Form", "000.000.000.000; "))
-        self.label_3.setText(_translate("Form", "Ip port"))
+        self.label_3.setText(_translate("Form", "IP port"))
         self.le_ip_port.setWhatsThis(_translate("Form", "MW9, WORD"))
         self.le_ip_port.setInputMask(_translate("Form", "00000; "))
         self.label_2.setText(_translate("Form", "MPI address"))

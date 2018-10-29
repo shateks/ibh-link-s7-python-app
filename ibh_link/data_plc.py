@@ -114,8 +114,15 @@ def _to_plc_real_(val):
 variable_range = namedtuple('variable_range',['minimum', 'maximum'])
 variable_address = namedtuple('variable_address', ['area', 'address', 'offset', 'bit_number'])
 visu_variable = namedtuple('visu_variable', ['area', 'address', 'offset', 'bit_nr', 'data_type'])
-variable_full_description = namedtuple('variable_full_description', ['area', 'address', 'offset', 'bit_nr',
-                                                                     'data_type', 'action', 'val_range'])
+
+
+class variable_full_description(namedtuple('variable_full_description', ['area', 'address', 'offset', 'bit_nr', 'data_type', 'action', 'val_range'])):
+
+    __slots__ = ()
+
+    def __str__(self):
+        return 'Area: {}, Address: {}, Offset: {}, Bit.nr.: {}, Data type: {}, Action: {}, Range: {}'.format(self.area,
+                self.address, self.offset, self.bit_nr, self.data_type, self.action, self.val_range)
 
 class BaseData:
     """

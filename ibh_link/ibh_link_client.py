@@ -4,6 +4,8 @@ import ctypes
 from ibh_link import ibh_const
 
 logger = logging.getLogger(__name__)
+# TODO: logging from this class in visu_host_gui_example causing crush
+logger.setLevel(100)
 
 class DriverError(Exception):
     pass

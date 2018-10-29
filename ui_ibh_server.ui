@@ -114,7 +114,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="3,0,3">
      <item>
       <widget class="QCheckBox" name="ckbAddWhenMissing">
        <property name="text">
@@ -123,18 +123,14 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="ckb1">
+      <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>CheckBox</string>
+        <string>PLC state:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
-       <property name="text">
-        <string>PushButton</string>
-       </property>
-      </widget>
+      <widget class="QComboBox" name="combo_plc_state"/>
      </item>
     </layout>
    </item>
