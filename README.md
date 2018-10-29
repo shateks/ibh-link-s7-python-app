@@ -15,15 +15,15 @@ I plan to equip app in following functionalities:
 ### PLC
 Programmable logic controllers are workhorse of industrial automation, they setting states on outputs depending
 on input states and inner program logic. Inputs are driven by: various type of sensors, buttons, potentiometers.
-Outputs drive indirect actuators: motors, servos, valves, grippers, ligths, etc.
-In majority the main loop inside runs every few miliseconds, which determine shortest response time.
+Outputs drive indirect actuators: motors, servos, valves, grippers, lights, etc.
+In majority the main loop inside runs every few milliseconds, which determine shortest response time.
 
 [PLC in wikipedia](https://en.wikipedia.org/wiki/Programmable_logic_controller)
 ## HMI
 Human machine interface is device which allows to interact operator with PLC(Machine), generally it is touch screen display
-with micro embaded PC and operating system.
-The main goal is to replace control panels with many manual buttons, switches and lamps, to compact size more expresive device.
-HMI is equiped in some kind of communication interface to exchange data with PLC.
+with micro embedded PC and operating system.
+The main goal is to replace control panels with many manual buttons, switches and lamps, to compact size more expressive device.
+HMI is equipped in some kind of communication interface to exchange data with PLC.
 
 [HMI in wikipedia](https://en.wikipedia.org/wiki/Control_panel_(engineering))
 ## Memory areas
