@@ -78,6 +78,6 @@ Actions for multi-bytes types can only be WRITE, for BOOL type can be: SETS or S
 * range of variation - is the range of allowed entries by user it refers mainly to QLineEdit. If not specified, maximal
 and minimal "interpretation of bytes" type will be used.
 
-###DEBUG tab
-If in "config.ini" \[DBEUG\] console=True, than DEBUG tab will be shown. It is helpful in screen/widget debugging because
+### DEBUG tab
+If in "config.ini" \[DBEUG\] console=True, then DEBUG tab will be shown. It is helpful in screen/widget debugging because
 there is logged parsing of "whatsThis" properties, and adding actions to GUI elements.
