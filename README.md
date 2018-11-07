@@ -62,11 +62,11 @@ to tab widget. To add visualisation screen modify 'config.ini' \[SCREENS\] prope
 In screen/widget '.ui' file to add gui element read/write action with PLC variable, simply fill "whatsThis" property.
 Supported widgets are: QPushButton, QLabel, QSlider, QDial, QProgressBar, QLineEdit.
 
-### Whats this property
+### What's this property
 
 ![](doc/Whats_this.png)
 
-Valid entry in whatsThis are:
+Valid entry in "whatsThis" are:
 variable absolute address\[interpretation of bytes\]\[action\]\[range of variation\].
 Entries are case insensitive, you can use german notation A==Q, E==I.
 * absolute address - must be applied, examples: I10.0, MW20, DB100.DBX1.0, ... .
