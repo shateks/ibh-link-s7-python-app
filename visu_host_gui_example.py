@@ -1,4 +1,5 @@
 import sys, logging
+from itertools import cycle
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QTextEdit, QMessageBox
@@ -12,19 +13,22 @@ from ibh_link import utils
 
 enable_crash_report('crash_visu_host_gui.txt')
 
-root_logger = logging.getLogger('')
+root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
 
-class QTextEditLoggerHandler(logging.Handler):
+class QTextEditLoggerHandler(logging.Handler, QObject):
 
     def __init__(self, widget: QWidget):
-        super().__init__()
+        logging.Handler.__init__(self)
+        QObject.__init__(self)
         self.setLevel(logging.DEBUG)
-        self.widget = widget
+        self.add_message.connect(widget.log)
 
     def emit(self, record):
         msg = self.format(record)
-        self.widget.log(msg, record.levelno)
+        self.add_message.emit(msg, record.levelno)
+
+    add_message = pyqtSignal(str, int)
 
 
 class MainWindow(QMainWindow):
@@ -33,27 +37,17 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        # status_bar_pallete = self.palette()
-        # status_bar_pallete.setColor(QPalette.Highlight, QColor(Qt.green))
 
-        self._images_no_connection = [QPixmap('./img/no_conn_1.png', ), QPixmap('./img/no_conn_2.png')]
-        # self._images_connection_ok = [QPixmap('./img/refresh_1.png', ), QPixmap('./img/refresh_2.png'),
-        #                               QPixmap('./img/refresh_3.png'), QPixmap('./img/refresh_4.png')]
-        self._images_connection_ok = [QPixmap('./img/arrow1.svg'), QPixmap('./img/arrow2.svg'),
-                                      QPixmap('./img/arrow3.svg'), QPixmap('./img/arrow4.svg')]
+        self._images_no_connection = cycle((QPixmap('./img/no_conn_1.png', ), QPixmap('./img/no_conn_2.png')))
+        self._images_connection_ok = cycle((QPixmap('./img/arrow1.svg'), QPixmap('./img/arrow2.svg'),
+                                            QPixmap('./img/arrow3.svg'), QPixmap('./img/arrow4.svg')))
+        self._images_communication_error = cycle((QPixmap('./img/err_conn_1.png'), QPixmap('./img/err_conn_2.png')))
         self._connection_animation_number = 0
-        self._communication_state = Status.no_connection
+        self._communication_state = CommunicationStatus.no_connection
 
         self._connection_status_label = QLabel()
         self._message_label = QLabel('...')
         self._plc_status_label = QLabel()
-
-
-        # self._refresh_label.setPixmap(self._images_connection_ok[self._connection_animation_number])
-
-        # self.ui.status_progress_bar = QProgressBar(self)
-        # self.ui.status_progress_bar.setRange(0, 100)
-        # self.ui.status_progress_bar.setPalette(status_bar_pallete)
 
         self._run_color_palette = QPalette()
         self._run_color_palette.setColor(QPalette.Window, Qt.darkGreen)
@@ -75,6 +69,7 @@ class MainWindow(QMainWindow):
         self._plc_status_label.setAutoFillBackground(True)
         self._plc_status_label.setAlignment(Qt.AlignCenter)
 
+        self.ui.statusbar.setMinimumHeight(40)
         self.ui.statusbar.addPermanentWidget(self._plc_status_label, 1)
         self.ui.statusbar.addPermanentWidget(self._message_label,10)
         self.ui.statusbar.addPermanentWidget(self._connection_status_label, 0)
@@ -83,18 +78,14 @@ class MainWindow(QMainWindow):
         self._graphics_timer.timeout.connect(self.animate_connection_state)
         self._graphics_timer.start(400)
 
-        # self.ui.statusbar.addPermanentWidget(self.ui.status_progress_bar, stretch=-1)
-
-        # wi = uic.loadUi('untitled.ui')
-        # self.ui.tabWidget.addTab(wi,'untitled')
-        # if debug_console:
-        #     self.add_debug_console()
+        self.mutable_tabs = []
 
     def add_debug_console(self):
         self.ui._console_widget = QWidget()
         self.ui._console_layout = QVBoxLayout()
         self.ui._console_text_edit = QTextEdit()
         self.ui._console_text_edit.setReadOnly(True)
+        self.ui._console_text_edit.document().setMaximumBlockCount(100000)
         self.ui._console_layout.addWidget(self.ui._console_text_edit)
         self.ui._console_widget.setLayout(self.ui._console_layout)
         self.ui.tabWidget.addTab(self.ui._console_widget, 'DEBUG')
@@ -107,22 +98,30 @@ class MainWindow(QMainWindow):
             self.ui._console_text_edit.setTextColor(Qt.black)
         self.ui._console_text_edit.append(msg)
 
-    @pyqtSlot(Status)
+    @pyqtSlot(CommunicationStatus)
     def change_connection_visu_state(self, state):
         self._communication_state = state
-
+        if self._communication_state == CommunicationStatus.succeed:
+            for tab in self.mutable_tabs:
+                tab.setEnabled(True)
+                self._message_label.setText('Connected to PLC.')
+        elif self._communication_state == CommunicationStatus.no_connection:
+            for tab in self.mutable_tabs:
+                tab.setEnabled(False)
+                self._message_label.setText('System error: No connection to adapter.')
+        elif self._communication_state == CommunicationStatus.communication_error:
+            for tab in self.mutable_tabs:
+                tab.setEnabled(False)
+                self._message_label.setText('System error: Connected to adapter, but PLC communication errors occurred.')
     @pyqtSlot()
     def animate_connection_state(self):
-        self._connection_animation_number += 1
-        if self._communication_state == Status.succeed:
-            if self._connection_animation_number > len(self._images_connection_ok) - 1:
-                self._connection_animation_number = 0
-            self._connection_status_label.setPixmap(self._images_connection_ok[self._connection_animation_number])
-        elif self._communication_state == Status.no_connection:
-            if self._connection_animation_number > len(self._images_no_connection) - 1:
-                self._connection_animation_number = 0
-            self._connection_status_label.setPixmap(self._images_no_connection[self._connection_animation_number])
+        if self._communication_state == CommunicationStatus.succeed:
+            self._connection_status_label.setPixmap(self._images_connection_ok.__next__())
+        elif self._communication_state == CommunicationStatus.no_connection:
+            self._connection_status_label.setPixmap(self._images_no_connection.__next__())
             self.display_plc_status('UNKNOWN')
+        elif self._communication_state == CommunicationStatus.communication_error:
+            self._connection_status_label.setPixmap(self._images_communication_error.__next__())
 
     @pyqtSlot(str)
     def display_plc_status(self, op_status):
@@ -174,14 +173,14 @@ if (__name__ == '__main__' ):
             try:
                 wi = uic.loadUi(file_name)
                 main_widget.ui.tabWidget.addTab(wi, screen_name)
+                main_widget.mutable_tabs.append(wi)
             except FileNotFoundError as e:
                  root_logger.warning("\nReading screen file problem\n{}".format(e))
         else:
             root_logger.debug('<<<<<<<<<<<<  End of adding screens >>>>>>>>>>>>>')
-        # worker = Worker('192.168.1.15', 2)
         worker = Worker(ip_address, mpi_address)
         worker.change_communication_parameters(ip_address, ip_port, mpi_address)
-        # worker.stay_connected = True
+        worker.stay_connected = True
         socket_thread = QThread()
 
         manager = Manager(worker)
@@ -190,7 +189,6 @@ if (__name__ == '__main__' ):
         root_logger.debug('\n<<<<<<<<<<<<  Parsing QWidget\'s \'What\'s this\' fields, connecting signals and slots >>>>>>>>>>>>>')
         for i in find_supported_widgets(main_widget):
             try:
-                # print('{}  {}'.format(i.objectName(), parser.parse(i.whatsThis())))
                 if i.whatsThis() == '':
                     continue
                 data = parser.parse(i.whatsThis())
@@ -201,10 +199,6 @@ if (__name__ == '__main__' ):
                 root_logger.warning('-----------------------\n'
                                     'In \'{}\' found: \'{}\' parsing failure'.format(i.objectName(), i.whatsThis()))
                 pass
-                # print(i.objectName(), str(e))
-                # widget.ui.btn_start.clicked.connect(lambda: w.read_bytes('D',0,100,1))
-                # w.read_bytes_signal.connect(lambda l: widget.ui.textEdit.append(str(l)))
-                # print('Main thread {}'.format(QThread.currentThreadId()))
         root_logger.debug('<<<<<<<<<<<<  End of parsing >>>>>>>>>>>>>\n')
         manager.optimize_readout_list()
 

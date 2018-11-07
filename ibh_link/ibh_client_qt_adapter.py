@@ -9,14 +9,14 @@ from collections import namedtuple, deque
 from enum import Enum
 from ibh_link.utils import variable_full_description
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
 
-class Status(Enum):
-    ready = 1
-    busy = 2
-    no_connection = 3
-    succeed = 4
+
+class CommunicationStatus(Enum):
+    succeed = 1
+    no_connection = 2
+    communication_error = 3
 
 
 read_deque = deque()
@@ -37,21 +37,17 @@ Not yet prepared for driver write operations,
 collection of elements "visu_variable, bool|int|float"
 """
 
-write_deque = deque()
-"""
-Prepared tuples for write for consuming by driver.
-Every tuple is single variable: one, two or four byte long.
-"""
-
 memory_chunk_type = namedtuple('memory_chunk_type',['area', 'address', 'offset', 'size'])
 
 SUPPORTED_WIDGETS = ['QPushButton', 'QLabel', 'QSlider', 'QDial', 'QProgressBar', 'QLineEdit']
+
 
 def find_supported_widgets(widget):
     w_list = widget.findChildren(QWidget)
     for w in w_list:
         if w.metaObject().className() in SUPPORTED_WIDGETS:
             yield w
+
 
 class DoubleWordValidator(QValidator):
 
@@ -93,9 +89,9 @@ class Manager(QObject):
 
         worker.queued_read_out_finished.connect(self.collect_bytes_and_send_values)
         self.start_packet_communication.connect(worker.queued_operations)
-        self.ask_for_plc_state.connect(worker.get_plc_status)
+        # self.ask_for_plc_state.connect(worker.get_plc_status)
         worker.plc_state_signal.connect(self.plc_state_receiver)
-        worker.status_signal.connect(self.socket_connection_error)
+        worker.communication_status_signal.connect(self.worker_status_receiver)
 
         self._time_memory = time.time()
 
@@ -192,7 +188,7 @@ class Manager(QObject):
             slot = lambda val: self.slot_handling_qlineedit(q_obj_ref, data, val)
             self.populate_bytes_readout(data)
             self._visu_variable_list.append(self.visu_object(data, slot))
-            read_subscriber_added_flag = True        
+            read_subscriber_added_flag = True
         if not(read_subscriber_added_flag or write_trigger_added_flag):
             logger.warning('No supported widget, or operation for: ' + q_obj_ref.objectName())
         else:
@@ -201,7 +197,7 @@ class Manager(QObject):
             if write_trigger_added_flag:
                 logger.debug('Added trigger for write operation: ' + q_obj_ref.objectName())
 
-        
+
     def slot_handling_qpushbutton(self, ref:QPushButton, data, val):
         if ref.isDown():
             return
@@ -314,21 +310,18 @@ class Manager(QObject):
         """
         """
         if self._socket_error_flag:
-            self.communication_status.emit(Status.no_connection)
             read_deque.clear()
             self._socket_error_flag = False
         if len(read_deque) == 0:
             for item in self._processed_readout_list:
                 read_deque.append(item)
-            self.ask_for_plc_state.emit()
+            # self.ask_for_plc_state.emit()
             self.start_packet_communication.emit()
 
     @pyqtSlot()
     def collect_bytes_and_send_values(self):
         """
-        When reading process is finished ?:
-        Check count of asked for reading bytes and counter of received bytes, if is equal
-        emit signal to driver for its status.
+
         :return:
         """
         _bytes_for_readout_ = self._templet_bytes_for_readout.copy()
@@ -370,29 +363,34 @@ class Manager(QObject):
                 else:
                     var_interpretation = item.data._plc_to_visu_conv(temp_list)
                     item.slot(var_interpretation)
-        print(time.time() - self._time_memory)
-        self._time_memory = time.time()
 
-        self.communication_status.emit(Status.succeed)
+        self.communication_status.emit(CommunicationStatus.succeed)
 
     # TODO: slot for receiving errors, status signals from worker
-    @pyqtSlot(Status)
-    def worker_status_receiver(self,status):
-        pass
+    # @pyqtSlot(CommunicationStatus)
+    # def worker_status_receiver(self,status):
+    #     pass
 
     @pyqtSlot(str)
     def plc_state_receiver(self, state):
         self.plc_state_signal.emit(state)
 
-    @pyqtSlot()
-    def socket_connection_error(self):
-        self._socket_error_flag = True
+    @pyqtSlot(CommunicationStatus)
+    def worker_status_receiver(self, status):
+        if status == CommunicationStatus.succeed:
+            pass
+        elif status == CommunicationStatus.no_connection:
+            self._socket_error_flag = True
+            self.communication_status.emit(CommunicationStatus.no_connection)
+        elif status == CommunicationStatus.communication_error:
+            self._socket_error_flag = True
+            self.communication_status.emit(CommunicationStatus.communication_error)
 
     start_packet_communication = pyqtSignal()
-    ask_for_plc_state = pyqtSignal()
+    # ask_for_plc_state = pyqtSignal()
     plc_state_signal = pyqtSignal(str)
-    communication_status = pyqtSignal(Status)
-    variable_registred = pyqtSignal(variable_full_description,)
+    communication_status = pyqtSignal(CommunicationStatus)
+    variable_registered = pyqtSignal(variable_full_description)
 
 
 class Worker(QObject):
@@ -401,12 +399,25 @@ class Worker(QObject):
     from the benefits of Qt signals and slots.
     The methods have practically the same arguments.
     """
+
+
     def __init__(self, ip_address, mpi_address):
         super().__init__()
         self._driver = ibh_client.IbhLinkDriver(ip_address, ibh_const.IBHLINK_PORT, mpi_address)
         self._driver.timeout = 0
         self._stay_connected = False
         self._change_driver = False
+        self._connection_errors = (ConnectionError, ibh_client.SocketUnexpectedDisconnected)
+        self._communication_errors = ibh_client.DriverError
+
+    def _connection_error_handler(self, e):
+        logger.error(str(e))
+        self._driver.drop_connection()
+        raise e
+
+    def _communication_error_handler(self, e):
+        logger.error(str(e))
+        raise e
 
     @pyqtSlot(str, int, int)
     def change_communication_parameters(self, ip_address, ip_port, mpi_address):
@@ -441,7 +452,7 @@ class Worker(QObject):
         :param data_address: int - number of data
         :param offset: int - in case of type 'D' number of DB block
         :param size: int - number of bytes to read beginning from target 'data_number'
-        :return: list - list of bytes TODO: check return type
+        :return: list - list of ints in range 0-255
         """
         vals = []
         try:
@@ -451,15 +462,14 @@ class Worker(QObject):
                 vals = self._driver.read_vals(data_type, data_address, offset, size)
                 if vals:
                     self.read_bytes_signal.emit(vals)
-        except (ConnectionError, ibh_client.SocketUnexpectedDisconnected) as e:
-            logger.error(str(e))
-            self._driver.drop_connection()
-            raise e
-        except ibh_client.DriverError as e:
-            logger.error(str(e))
-            raise e
-        if not self.stay_connected:
-            self._driver.disconnect_plc()
+                if not self.stay_connected:
+                    self._driver.disconnect_plc()
+            else:
+                self.communication_status_signal.emit(CommunicationStatus.no_connection)
+        except self._connection_errors as e:
+            self._connection_error_handler(e)
+        except self._communication_errors as e:
+            self._communication_error_handler(e)
         return vals
 
     @pyqtSlot(str, int, int, int, bytes)
@@ -477,44 +487,46 @@ class Worker(QObject):
             if self._driver.connected:
                 self._driver.write_vals(data_type, data_address, offset, size, val)
                 self.write_bytes_signal.emit()
-        except (ConnectionError, ibh_client.SocketUnexpectedDisconnected) as e:
-            logger.error(str(e))
-            self._driver.drop_connection()
-            raise e
-        except ibh_client.DriverError as e:
-            logger.error(str(e))
-            raise e
-        finally:
-            if not self.stay_connected:
-                self._driver.disconnect_plc()
+                if not self.stay_connected:
+                    self._driver.disconnect_plc()
+            else:
+                self.communication_status_signal.emit(CommunicationStatus.no_connection)
+        except self._connection_errors as e:
+            self._connection_error_handler(e)
+        except self._communication_errors as e:
+            self._communication_error_handler(e)
 
     @pyqtSlot()
-    def get_plc_status(self):
+    def get_plc_status(self)->str:
         try:
             if not self._driver.connected:
                 self._driver.connect_plc()
             if self._driver.connected:
                 status = self._driver.plc_get_run()
                 self.plc_state_signal.emit(status)
+                if not self.stay_connected:
+                    self._driver.disconnect_plc()
+                return status
             else:
-                self.status_signal.emit(Status.no_connection)
-        except (ConnectionError, ibh_client.SocketUnexpectedDisconnected) as e:
-            logger.error(str(e))
-            self._driver.drop_connection()
-            # raise e
-        except ibh_client.DriverError as e:
-            logger.error(str(e))
-            # raise e
-        finally:
-            if not self.stay_connected:
-                self._driver.disconnect_plc()
+                self.communication_status_signal.emit(CommunicationStatus.no_connection)
+        except self._connection_errors as e:
+            self._connection_error_handler(e)
+        except self._communication_errors as e:
+            self._communication_error_handler(e)
 
     @pyqtSlot()
     def queued_operations(self):
-        if len(write_request_deque):
-            self.queued_write_in()
-        if len(read_deque):
-            self.queued_read_out()
+        try:
+            self.get_plc_status()
+            if len(write_request_deque):
+                self.queued_write_in()
+            if len(read_deque):
+                self.queued_read_out()
+            self.communication_status_signal.emit(CommunicationStatus.succeed)
+        except self._connection_errors as e:
+            self.communication_status_signal.emit(CommunicationStatus.no_connection)
+        except self._communication_errors as e:
+            self.communication_status_signal.emit(CommunicationStatus.communication_error)
 
     def queued_read_out(self):
         try:
@@ -526,8 +538,10 @@ class Worker(QObject):
                 except IndexError:
                     break
             self.queued_read_out_finished.emit()
-        except (ConnectionError, ibh_client.DriverError):
-            self.status_signal.emit(Status.no_connection)
+        except self._connection_errors as e:
+            self._connection_error_handler(e)
+        except self._communication_errors as e:
+            self._communication_error_handler(e)
 
     def queued_write_in(self):
         try:
@@ -535,10 +549,11 @@ class Worker(QObject):
                 try:
                     chunk, data, val = write_request_deque.popleft()
                     value_list = self.read_bytes(chunk.area, chunk.address, chunk.offset, chunk.size)
+                    result_list = []
                     if type(data) is WritableBitData:
                         if data.action == Action.TOGGLE:
                             logic_val = data.bytes_list_to_variable(value_list)
-                            if logic_val == True:
+                            if logic_val is True:
                                 result_list = data.variable_to_bytes(value_list, False)
                             else:
                                 result_list = data.variable_to_bytes(value_list, True)
@@ -553,11 +568,13 @@ class Worker(QObject):
                 except IndexError:
                     break
             self.queued_write_in_finished.emit()
-        except (ConnectionError, ibh_client.DriverError):
-            self.status_signal.emit(Status.no_connection)
+        except self._connection_errors as e:
+            self._connection_error_handler(e)
+        except self._communication_errors as e:
+            self._communication_error_handler(e)
 
     failure_signal = pyqtSignal(str)
-    status_signal = pyqtSignal(Status)
+    communication_status_signal = pyqtSignal(CommunicationStatus)
     read_bytes_signal = pyqtSignal(list)
     write_bytes_signal = pyqtSignal()
     plc_state_signal = pyqtSignal(str)
