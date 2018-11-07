@@ -4,8 +4,8 @@ import ctypes
 from ibh_link import ibh_const
 
 logger = logging.getLogger(__name__)
-# TODO: logging from this class in visu_host_gui_example causing crush
-logger.setLevel(100)
+logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.CRITICAL)
 
 class DriverError(Exception):
     pass
@@ -265,7 +265,7 @@ class IbhLinkDriver:
             else:
                 raise ToShortSendReceiveTelegramError(
                     'Received telegram is too short is {}, expected {}'.format(len(raw_bytes),
-                                                                               ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE)
+                     ibh_const.MSG_HEADER_SIZE + ibh_const.TELE_HEADER_SIZE)
                 )
         return raw_bytes
 

@@ -19,7 +19,7 @@ file_handler.setFormatter(formater)
 
 logging.basicConfig(format=FORMAT,handlers=(console,file_handler))
 
-root_logger = logging.getLogger('')
+root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
 
 class MainWindow(QWidget):

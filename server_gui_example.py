@@ -11,7 +11,7 @@ import faulthandler
 import PyQt5
 from ibh_link.safe_connector import SafeConnector
 
-f1 = open("crash.txt",'w')
+f1 = open("crash_server_gui.txt",'w')
 faulthandler.enable(file=f1)
 
 PLC_STATE = OrderedDict({ibh.OP_STATUS_STOP:'STOP', ibh.OP_STATUS_START:'START', ibh.OP_STATUS_RUN:'RUN',
