@@ -204,6 +204,26 @@ class BaseData:
     def variable_to_bytes(self, *args):
         return self._visu_to_plc_conv(*args)
 
+    def __hash__(self):
+        return hash((self._area, self._offset, self._address, self._bit_nr, self._data_type))
+
+    def __eq__(self, other):
+        """
+        >>> var1 = visu_variable('M',20,0,2,DataType.BOOL)
+        >>> var2 = visu_variable('M',20,0,3,DataType.BOOL)
+        >>> a = BaseData(var1)
+        >>> b = BaseData(var1)
+        >>> c = BaseData(var2)
+        >>> a == b
+        True
+        >>> a != c
+        True
+        """
+        if isinstance(other, BaseData):
+            if self.__hash__() == other.__hash__():
+                    return True
+        return False
+
 class WritableData(BaseData):
     def __init__(self, visu: variable_full_description):
         super().__init__(visu)

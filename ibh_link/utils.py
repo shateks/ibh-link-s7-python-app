@@ -14,10 +14,13 @@ def recursive_dict_fromkeys(recursive_dict: dict) -> dict:
             result[k] = None
     return result
 
+
 class PlcVariableParser:
     """
     Class for parsing strings provided by 'What's this' property
     """
+
+
     def __init__(self):
         _data_area_finder_expresion = r"^([A-Z]{1,3})([\d]{1,4})"
         _bit_type_address_expresion = r"(?<=\.)[0-7]"
@@ -86,13 +89,13 @@ class PlcVariableParser:
         return True
 
     def analyze_range(self, re_result, var_type: DataType):
-        '''
+        """
         Method is trying to find variable range description like: 'RANGE(-20,500)'
         Can raise: ValueError
         :param re_result: re.Match
         :param var_type: DataType
         :return: variable_range
-        '''
+        """
         result_first = None
         result_second = None
         if re_result is not None:
@@ -237,6 +240,22 @@ class PlcVariableParser:
 
         full_var_desc = variable_full_description(area, address, offset, bit_number, data_type, action_type, var_range)
         return full_var_desc
+
+    def parse_alarm(self, str_val):
+        """
+        Method for parsing alarm window, for instance: 'db100.dbx10.2 comment section' to
+        named tuple 'variable_full_description' and 'comment section'
+        :param str_val: str
+        :raises ValueError
+        :return: variable_full_description, str
+        """
+        val, comment = str_val.strip().split(' ', 1)
+        comment = comment.strip()
+        val = val.strip().upper()
+        full_var_desc = self.parse(val)
+        if full_var_desc.data_type != DataType.BOOL or full_var_desc.action != None:
+            raise ValueError('No valid S7 address for alarm variable:{}'.format(str_val))
+        return full_var_desc, comment
 
 
 class ConfReader:

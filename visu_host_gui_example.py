@@ -199,6 +199,12 @@ if (__name__ == '__main__' ):
                 root_logger.warning('-----------------------\n'
                                     'In \'{}\' found: \'{}\' parsing failure'.format(i.objectName(), i.whatsThis()))
                 pass
+
+            if isinstance(i, QListView):
+                # do multiline parsing and retrieve rest of line
+                pass
+
+
         root_logger.debug('<<<<<<<<<<<<  End of parsing >>>>>>>>>>>>>\n')
         manager.optimize_readout_list()
 

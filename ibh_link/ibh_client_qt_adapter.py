@@ -1,13 +1,14 @@
 import logging
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal, QLocale
 from PyQt5.QtGui import QDoubleValidator, QValidator
-from PyQt5.QtWidgets import QLabel, QPushButton, QSlider, QDial, QProgressBar, QLineEdit, QWidget
+from PyQt5.QtWidgets import QLabel, QPushButton, QSlider, QDial, QProgressBar, QLineEdit, QWidget, QListView
 import time
 from ibh_link import ibh_const, ibh_client
 from ibh_link.data_plc import BaseData, WritableBitData, WritableNumericData, Action, DataType
 from collections import namedtuple, deque
 from enum import Enum
 from ibh_link.utils import variable_full_description
+from ibh_link.alarm_window import AlarmWindowModel
 
 logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
@@ -39,7 +40,7 @@ collection of elements "visu_variable, bool|int|float"
 
 memory_chunk_type = namedtuple('memory_chunk_type',['area', 'address', 'offset', 'size'])
 
-SUPPORTED_WIDGETS = ['QPushButton', 'QLabel', 'QSlider', 'QDial', 'QProgressBar', 'QLineEdit']
+SUPPORTED_WIDGETS = ['QPushButton', 'QLabel', 'QSlider', 'QDial', 'QProgressBar', 'QLineEdit', 'QListView']
 
 
 def find_supported_widgets(widget):
@@ -189,6 +190,12 @@ class Manager(QObject):
             self.populate_bytes_readout(data)
             self._visu_variable_list.append(self.visu_object(data, slot))
             read_subscriber_added_flag = True
+        elif isinstance(q_obj_ref, QListView):
+            if not hasattr('q_obj_ref', '__alarm_window_model'):
+                q_obj_ref.__alarm_window_model = AlarmWindowModel()
+                q_obj_ref.setModel(q_obj_ref.__alarm_window_model)
+
+            pass
         if not(read_subscriber_added_flag or write_trigger_added_flag):
             logger.warning('No supported widget, or operation for: ' + q_obj_ref.objectName())
         else:
