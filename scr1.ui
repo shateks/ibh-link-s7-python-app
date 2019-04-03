@@ -310,7 +310,7 @@
     </rect>
    </property>
    <property name="whatsThis">
-    <string>QB125 w</string>
+    <string>QB100 write</string>
    </property>
    <property name="maximum">
     <number>255</number>
