@@ -201,9 +201,19 @@ if (__name__ == '__main__' ):
                 pass
 
             if isinstance(i, QListView):
-                # do multiline parsing and retrieve rest of line
-                pass
-
+                for line in i.whatsThis().split('\n'):
+                    try:
+                        if line == '':
+                            continue
+                        data, text = parser.parse_alarm(line)
+                        root_logger.info('-----------------------\n'
+                                         'In \'{}\' found: \'{}\' parsed to: \'{}\' text: \'{}\''.format(i.objectName(),
+                                                                                            line, data, text))
+                        manager.add_alarm(data, i, text)
+                    except ValueError as e:
+                        root_logger.warning('-----------------------\n'
+                                            'In \'{}\' found: \'{}\' parsing failure'.format(i.objectName(),
+                                                                                             line))
 
         root_logger.debug('<<<<<<<<<<<<  End of parsing >>>>>>>>>>>>>\n')
         manager.optimize_readout_list()

@@ -190,12 +190,6 @@ class Manager(QObject):
             self.populate_bytes_readout(data)
             self._visu_variable_list.append(self.visu_object(data, slot))
             read_subscriber_added_flag = True
-        elif isinstance(q_obj_ref, QListView):
-            if not hasattr('q_obj_ref', '__alarm_window_model'):
-                q_obj_ref.__alarm_window_model = AlarmWindowModel()
-                q_obj_ref.setModel(q_obj_ref.__alarm_window_model)
-
-            pass
         if not(read_subscriber_added_flag or write_trigger_added_flag):
             logger.warning('No supported widget, or operation for: ' + q_obj_ref.objectName())
         else:
@@ -203,6 +197,34 @@ class Manager(QObject):
                 logger.debug('Subscriber added for reading: ' + q_obj_ref.objectName())
             if write_trigger_added_flag:
                 logger.debug('Added trigger for write operation: ' + q_obj_ref.objectName())
+
+    def add_alarm(self, full_description: variable_full_description, q_obj_ref, text: str):
+        """
+        Adding alarm window as subscriber for plc data readout.
+        :param full_description: variable_full_description
+        :param q_obj_ref: QObject - Reference for QObject
+        :param text: str - text connected with boolean value
+        :return:
+        """
+        read_subscriber_added_flag = False
+        if isinstance(q_obj_ref, QListView):
+            if q_obj_ref.model() is None:
+                q_obj_ref.__alarm_window_model = AlarmWindowModel()
+                q_obj_ref.setModel(q_obj_ref.__alarm_window_model)
+                self.send_state.connect(q_obj_ref.__alarm_window_model.alarm_state)
+            data = BaseData(full_description)
+            # slot = lambda val: self.slot_handling_qpushbutton(q_obj_ref, data, val)
+            self.populate_bytes_readout(data)
+            q_obj_ref.__alarm_window_model.define_alarm(data, text)
+            # slot = lambda val: q_obj_ref.__alarm_window_model.alarm_state(data, val)
+            slot = lambda val: self.send_state.emit(data, val)
+            self._visu_variable_list.append(self.visu_object(data, slot))
+            read_subscriber_added_flag = True
+
+        if not read_subscriber_added_flag:
+            logger.warning('No supported widget, or operation for: ' + q_obj_ref.objectName())
+        else:
+            logger.debug('Subscriber added for reading: ' + q_obj_ref.objectName())
 
 
     def slot_handling_qpushbutton(self, ref:QPushButton, data, val):
@@ -356,9 +378,10 @@ class Manager(QObject):
                     else:
                         item.slot(False)
                         break
-                else:
-                    var_interpretation = item.data._plc_to_visu_conv(temp_list)
-                    item.slot(str(var_interpretation))
+                # else:
+                #     var_interpretation = item.data._plc_to_visu_conv(temp_list)
+                #     # TODO: Whay here is casting to string?
+                #     item.slot(str(var_interpretation))
             else:
                 for byte_number in item.data.occupied_bytes:
                     temp_byte = _bytes_for_readout_[item.data.area][byte_number]
@@ -367,9 +390,14 @@ class Manager(QObject):
                     else:
                         item.slot(False)
                         break
-                else:
-                    var_interpretation = item.data._plc_to_visu_conv(temp_list)
-                    item.slot(var_interpretation)
+                # else:
+                #     var_interpretation = item.data._plc_to_visu_conv(temp_list)
+                #     # TODO: Whay here is no casting to string?
+                #     item.slot(var_interpretation)
+            var_interpretation = item.data._plc_to_visu_conv(temp_list)
+            item.slot(var_interpretation)
+            # self.send_state.emit(item.data, var_interpretation)
+            # item.slot(str(var_interpretation))
 
         self.communication_status.emit(CommunicationStatus.succeed)
 
@@ -394,6 +422,7 @@ class Manager(QObject):
             self.communication_status.emit(CommunicationStatus.communication_error)
 
     start_packet_communication = pyqtSignal()
+    send_state = pyqtSignal(BaseData, bool)
     # ask_for_plc_state = pyqtSignal()
     plc_state_signal = pyqtSignal(str)
     communication_status = pyqtSignal(CommunicationStatus)
