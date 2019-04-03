@@ -247,7 +247,7 @@ class PlcVariableParser:
         named tuple 'variable_full_description' and 'comment section'
         :param str_val: str
         :raises ValueError
-        :return: variable_full_description, str
+        :return: tuple(variable_full_description, str)
         """
         val, comment = str_val.strip().split(' ', 1)
         comment = comment.strip()
