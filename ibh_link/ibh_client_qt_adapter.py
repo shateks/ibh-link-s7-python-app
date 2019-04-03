@@ -90,7 +90,6 @@ class Manager(QObject):
 
         worker.queued_read_out_finished.connect(self.collect_bytes_and_send_values)
         self.start_packet_communication.connect(worker.queued_operations)
-        # self.ask_for_plc_state.connect(worker.get_plc_status)
         worker.plc_state_signal.connect(self.plc_state_receiver)
         worker.communication_status_signal.connect(self.worker_status_receiver)
 
@@ -213,11 +212,9 @@ class Manager(QObject):
                 q_obj_ref.setModel(q_obj_ref.__alarm_window_model)
                 self.send_state.connect(q_obj_ref.__alarm_window_model.alarm_state)
             data = BaseData(full_description)
-            # slot = lambda val: self.slot_handling_qpushbutton(q_obj_ref, data, val)
             self.populate_bytes_readout(data)
             q_obj_ref.__alarm_window_model.define_alarm(data, text)
-            # slot = lambda val: q_obj_ref.__alarm_window_model.alarm_state(data, val)
-            slot = lambda val: self.send_state.emit(data, val)
+            slot = lambda val: q_obj_ref.__alarm_window_model.alarm_state(data, val)
             self._visu_variable_list.append(self.visu_object(data, slot))
             read_subscriber_added_flag = True
 
@@ -344,13 +341,12 @@ class Manager(QObject):
         if len(read_deque) == 0:
             for item in self._processed_readout_list:
                 read_deque.append(item)
-            # self.ask_for_plc_state.emit()
             self.start_packet_communication.emit()
 
     @pyqtSlot()
     def collect_bytes_and_send_values(self):
         """
-
+        Collects byte arrays/deque, writes to dictionary and sends to all visualization objects values.
         :return:
         """
         _bytes_for_readout_ = self._templet_bytes_for_readout.copy()
@@ -378,10 +374,6 @@ class Manager(QObject):
                     else:
                         item.slot(False)
                         break
-                # else:
-                #     var_interpretation = item.data._plc_to_visu_conv(temp_list)
-                #     # TODO: Whay here is casting to string?
-                #     item.slot(str(var_interpretation))
             else:
                 for byte_number in item.data.occupied_bytes:
                     temp_byte = _bytes_for_readout_[item.data.area][byte_number]
@@ -390,15 +382,8 @@ class Manager(QObject):
                     else:
                         item.slot(False)
                         break
-                # else:
-                #     var_interpretation = item.data._plc_to_visu_conv(temp_list)
-                #     # TODO: Whay here is no casting to string?
-                #     item.slot(var_interpretation)
             var_interpretation = item.data._plc_to_visu_conv(temp_list)
             item.slot(var_interpretation)
-            # self.send_state.emit(item.data, var_interpretation)
-            # item.slot(str(var_interpretation))
-
         self.communication_status.emit(CommunicationStatus.succeed)
 
     # TODO: slot for receiving errors, status signals from worker
@@ -423,7 +408,6 @@ class Manager(QObject):
 
     start_packet_communication = pyqtSignal()
     send_state = pyqtSignal(BaseData, bool)
-    # ask_for_plc_state = pyqtSignal()
     plc_state_signal = pyqtSignal(str)
     communication_status = pyqtSignal(CommunicationStatus)
     variable_registered = pyqtSignal(variable_full_description)
