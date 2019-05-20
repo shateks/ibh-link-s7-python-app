@@ -6,761 +6,1805 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>848</width>
-    <height>877</height>
+    <width>741</width>
+    <height>753</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="verticalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>70</x>
-     <y>120</y>
-     <width>431</width>
-     <height>80</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Q300.x</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="pushButton">
-        <property name="whatsThis">
-         <string>Q300.7 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_2">
-        <property name="whatsThis">
-         <string>Q300.6 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_3">
-        <property name="whatsThis">
-         <string>Q300.5 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_4">
-        <property name="whatsThis">
-         <string>Q300.4 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_5">
-        <property name="whatsThis">
-         <string>Q300.3 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_6">
-        <property name="whatsThis">
-         <string>Q300.2 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_7">
-        <property name="whatsThis">
-         <string>Q300.1 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_8">
-        <property name="whatsThis">
-         <string>Q300.0 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QDial" name="dial_2">
-   <property name="geometry">
-    <rect>
-     <x>510</x>
-     <y>130</y>
-     <width>61</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="whatsThis">
-    <string>QB300 write</string>
-   </property>
-   <property name="maximum">
-    <number>255</number>
-   </property>
-  </widget>
-  <widget class="QDial" name="dial_3">
-   <property name="geometry">
-    <rect>
-     <x>570</x>
-     <y>130</y>
-     <width>61</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="whatsThis">
-    <string>QB300</string>
-   </property>
-   <property name="maximum">
-    <number>255</number>
-   </property>
-  </widget>
-  <widget class="QDial" name="dial_4">
-   <property name="geometry">
-    <rect>
-     <x>510</x>
-     <y>320</y>
-     <width>61</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="whatsThis">
-    <string>QB400 write</string>
-   </property>
-   <property name="maximum">
-    <number>255</number>
-   </property>
-  </widget>
-  <widget class="QDial" name="dial_5">
-   <property name="geometry">
-    <rect>
-     <x>570</x>
-     <y>320</y>
-     <width>61</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="whatsThis">
-    <string>QB400</string>
-   </property>
-   <property name="maximum">
-    <number>255</number>
-   </property>
-  </widget>
-  <widget class="QWidget" name="verticalLayoutWidget_2">
-   <property name="geometry">
-    <rect>
-     <x>70</x>
-     <y>310</y>
-     <width>431</width>
-     <height>80</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Q400.x</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QPushButton" name="pushButton_9">
-        <property name="whatsThis">
-         <string>Q400.7 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_10">
-        <property name="whatsThis">
-         <string>Q400.6 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_11">
-        <property name="whatsThis">
-         <string>Q400.5 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_12">
-        <property name="whatsThis">
-         <string>Q400.4 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_13">
-        <property name="whatsThis">
-         <string>Q400.3 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_14">
-        <property name="whatsThis">
-         <string>Q400.2 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_15">
-        <property name="whatsThis">
-         <string>Q400.1 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_16">
-        <property name="whatsThis">
-         <string>Q400.0 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>520</x>
-     <y>120</y>
-     <width>68</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="whatsThis">
-    <string>qb300</string>
-   </property>
-   <property name="text">
-    <string>TextLabel</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>530</x>
-     <y>300</y>
-     <width>68</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="whatsThis">
-    <string>qb400</string>
-   </property>
-   <property name="text">
-    <string>TextLabel</string>
-   </property>
-  </widget>
-  <widget class="QProgressBar" name="progressBar">
-   <property name="geometry">
-    <rect>
-     <x>520</x>
-     <y>200</y>
-     <width>118</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="whatsThis">
-    <string>qb300</string>
-   </property>
-   <property name="maximum">
-    <number>255</number>
-   </property>
-   <property name="value">
-    <number>24</number>
-   </property>
-  </widget>
-  <widget class="QProgressBar" name="progressBar_2">
-   <property name="geometry">
-    <rect>
-     <x>520</x>
-     <y>400</y>
-     <width>118</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="whatsThis">
-    <string>qb400</string>
-   </property>
-   <property name="maximum">
-    <number>255</number>
-   </property>
-   <property name="value">
-    <number>24</number>
-   </property>
-  </widget>
-  <widget class="QLCDNumber" name="lcdNumber">
-   <property name="geometry">
-    <rect>
-     <x>70</x>
-     <y>420</y>
-     <width>211</width>
-     <height>81</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QColumnView" name="columnView">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>580</y>
-     <width>256</width>
-     <height>192</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QTableWidget" name="tableWidget">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>530</y>
-     <width>581</width>
-     <height>192</height>
-    </rect>
-   </property>
-   <column>
-    <property name="text">
-     <string>Time</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Errr</string>
-    </property>
-   </column>
-  </widget>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout" rowstretch="1,2,1,1">
+     <item row="0" column="0">
+      <widget class="QGroupBox" name="groupBox_4">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="title">
+        <string>ROLKOWY 1</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QPushButton" name="pushButton_13">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX1.0 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO PRZODU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_14">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX1.1 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO TYŁU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_16">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="acceptDrops">
+             <bool>false</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx6.0</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>11B1</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>false</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_17">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx6.1</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>11B2</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="title">
+        <string>ŁAŃCUCHOWY 1</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QPushButton" name="pushButton_9">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX1.4 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO PRZODU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_10">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX1.5 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO TYŁU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_22">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx6.6</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>14B1</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="title">
+        <string>ŁAŃCUCHOWY 2 (OBROTNICA)</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_9">
+        <item>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <property name="horizontalSpacing">
+           <number>5</number>
+          </property>
+          <property name="verticalSpacing">
+           <number>2</number>
+          </property>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="pushButton_26">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx7.2</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B3</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="pushButton_23">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx6.7</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B0</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="pushButton_25">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx7.1</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B2</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="pushButton_27">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx7.3</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B4</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QPushButton" name="pushButton_28">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx7.4</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B5</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QPushButton" name="pushButton_29">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx7.5</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B6</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QPushButton" name="pushButton_30">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx7.6</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B7</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="pushButton_24">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx7.0</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B1</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="pushButton_49">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX3.6 toggle</string>
+            </property>
+            <property name="text">
+             <string>PRZECIWNIE DO RUCHU
+WSKAZÓWEK ZEGARA</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pushButton_48">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::WheelFocus</enum>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX3.5 toggle</string>
+            </property>
+            <property name="text">
+             <string>ZGODNIE Z RUCHEM
+WSKAZÓWEK ZEGARA</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QGroupBox" name="groupBox_3">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="title">
+        <string>ŁAŃCUCHOWY 2 (OBROTNICA)</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QPushButton" name="pushButton_11">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX1.6 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO PRZODU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_12">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX1.7 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO TYŁU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_32">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx7.7</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B10</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_31">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx8.0</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B11</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_33">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx8.1</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B12</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_34">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx8.2</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>16B13</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="title">
+        <string>ROLKOWY 2</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QPushButton" name="pushButton_7">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX1.2 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO PRZODU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_8">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX1.3 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO TYŁU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_18">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx6.2</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>12B1</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_19">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx6.3</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>12B2</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_15">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX3.4 toggle</string>
+            </property>
+            <property name="text">
+             <string>PODNOSZENIE</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_20">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx6.4</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>13B1</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_21">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx6.5</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>13B2</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QGroupBox" name="groupBox_6">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="title">
+        <string>ŁAŃCUCHOWY 3</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_10">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_11">
+          <item>
+           <widget class="QPushButton" name="pushButton_50">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX2.0 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO PRZODU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_51">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX2.1 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO TYŁU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_35">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx8.3</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>17B1</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_36">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx8.4</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>17S1/17S2</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QGroupBox" name="groupBox_12">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="title">
+        <string>BRAMA</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_22">
+        <item>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="5" column="1">
+           <widget class="QPushButton" name="pushButton_39">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx9.1</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>18P2</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="pushButton_52">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX3.7 toggle</string>
+            </property>
+            <property name="text">
+             <string>GÓRA</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="pushButton_41">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx8.7</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>18B3</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="pushButton_53">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX4.0 toggle</string>
+            </property>
+            <property name="text">
+             <string>STOP</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="pushButton_40">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx8.6</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>18B2</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="pushButton_37">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx8.5</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>18B1</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="pushButton_54">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX4.1 toggle</string>
+            </property>
+            <property name="text">
+             <string>DÓŁ</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="pushButton_38">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx9.0</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>18P1</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QGroupBox" name="groupBox_7">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="title">
+        <string>ŁAŃCUCHOWY 4</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_12">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+          <item>
+           <widget class="QPushButton" name="pushButton_55">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX2.2 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO PRZODU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_56">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="whatsThis">
+             <string>DB100.DBX2.3 toggle</string>
+            </property>
+            <property name="text">
+             <string>DO TYŁU</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_42">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="whatsThis">
+             <string>db100.dbx9.2</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: None</string>
+            </property>
+            <property name="text">
+             <string>19B1</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>img/led_green_off.svg</normaloff>
+              <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>15</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

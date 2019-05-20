@@ -1650,6 +1650,16 @@
     <bool>false</bool>
    </property>
   </widget>
+  <widget class="QListView" name="listView">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>450</y>
+     <width>256</width>
+     <height>192</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

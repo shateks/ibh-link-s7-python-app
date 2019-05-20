@@ -7,315 +7,271 @@
     <x>0</x>
     <y>0</y>
     <width>772</width>
-    <height>596</height>
+    <height>757</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="verticalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>70</x>
-     <y>120</y>
-     <width>431</width>
-     <height>80</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Q100.x</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="pushButton">
-        <property name="whatsThis">
-         <string>Q100.7 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_2">
-        <property name="whatsThis">
-         <string>Q100.6 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_3">
-        <property name="whatsThis">
-         <string>Q100.5 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_4">
-        <property name="whatsThis">
-         <string>Q100.4 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_5">
-        <property name="whatsThis">
-         <string>Q100.3 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_6">
-        <property name="whatsThis">
-         <string>Q100.2 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_7">
-        <property name="whatsThis">
-         <string>Q100.1 toggle</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_8">
-        <property name="whatsThis">
-         <string>Q100.0 t</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">border: None</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>img/led_green_off.svg</normaloff>
-          <normalon>img/led_green_on.svg</normalon>img/led_green_off.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>40</width>
-          <height>40</height>
-         </size>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QDial" name="dial_2">
-   <property name="geometry">
-    <rect>
-     <x>230</x>
-     <y>280</y>
-     <width>61</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="whatsThis">
-    <string>QB100 write</string>
-   </property>
-   <property name="maximum">
-    <number>255</number>
-   </property>
-  </widget>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_191">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="whatsThis">
+        <string>DB100.DBX0.3</string>
+       </property>
+       <property name="pixmap">
+        <pixmap>img/led_green_on.svg</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="margin">
+        <number>1</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_9">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>24</pointsize>
+        </font>
+       </property>
+       <property name="whatsThis">
+        <string>DB100.DBX0.0 S</string>
+       </property>
+       <property name="text">
+        <string>AUTO</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_192">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="whatsThis">
+        <string>DB100.DBX0.4</string>
+       </property>
+       <property name="pixmap">
+        <pixmap>img/led_green_on.svg</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="margin">
+        <number>1</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_10">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>24</pointsize>
+        </font>
+       </property>
+       <property name="whatsThis">
+        <string>DB100.DBX0.1 S</string>
+       </property>
+       <property name="text">
+        <string>MANUALNY</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QListView" name="listView">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="whatsThis">
+        <string>db110.dbx0.0 Wyłącznik bezpieczeństwa
+db110.dbx0.1 Zabezpieczenie termiczne lub nadprądowe
+db110.dbx0.2 Falowniki brak gotowości
+db110.dbx11.0 Rolkowy 1. Ładowanie, zbyt długi czas wjazdu na przenosnik 
+db110.dbx11.1 Rolkowy 1. Rozładowanie, zbyt długi czas wyjazdu z przenosnika
+db110.dbx11.2 Rolkowy 1. Rozładowanie, sygnał z fotokomórki pojawił się drugi raz
+db110.dbx12.0 Rolkowy 2. Ładowanie, zbyt długi czas wjazdu na przenosnik 
+db110.dbx12.1 Rolkowy 2. Rozładowanie, zbyt długi czas wyjazdu z przenosnika
+db110.dbx12.2 Rolkowy 2. Rozładowanie, sygnał z fotokomórki pojawił się drugi raz
+db110.dbx14.0 Łańcuchowy 1. Ładowanie, zbyt długi czas wjazdu na przenosnik 
+db110.dbx14.1 Łańcuchowy 1. Rozładowanie, zbyt długi czas wyjazdu z przenosnika
+db110.dbx14.2 Łańcuchowy 1. Rozładowanie, sygnał z fotokomórki pojawił się drugi raz
+db110.dbx16.0 Łańcuchowy 2. Ładowanie, zbyt długi czas wjazdu na przenosnik 
+db110.dbx16.1 Łańcuchowy 2. Rozładowanie, zbyt długi czas wyjazdu z przenosnika
+db110.dbx16.2 Łańcuchowy 2. Rozładowanie, sygnał z fotokomórki pojawił się drugi raz
+db110.dbx17.0 Łańcuchowy 3. Ładowanie, zbyt długi czas wjazdu na przenosnik 
+db110.dbx17.1 Łańcuchowy 3. Rozładowanie, zbyt długi czas wyjazdu z przenosnika
+db110.dbx17.2 Łańcuchowy 3. Rozładowanie, sygnał z fotokomórki pojawił się drugi raz
+db110.dbx19.0 Łańcuchowy 4. Ładowanie, zbyt długi czas wjazdu na przenosnik 
+db110.dbx19.1 Łańcuchowy 4. Rozładowanie, zbyt długi czas wyjazdu z przenosnika
+db110.dbx19.2 Łańcuchowy 4. Rozładowanie, sygnał z fotokomórki pojawił się drugi raz
+db110.dbx20.0 Łańcuchowy 5. Obydwie fotokomórki zajęte
+db110.dbx20.1 Łańcuchowy 5. Ładowanie, zbyt długi czas wyjazdu z przenosnika na pierwszą fotokomórkę
+db110.dbx20.2 Łańcuchowy 5. Ładowanie, zbyt długi czas wyjazdu z przenosnika na drugą fotokomórkę
+db110.dbx20.3 Łańcuchowy 5. Rozładowanie, przekroczenie czasu a sygnał z fotokomórki wyjazdowej wciąż obecny
+db110.dbx20.4 Łańcuchowy 5. Ładowanie, pojawiła się fotokomórka wyjściowa
+db110.dbx21.0 Łańcuchowy 6. Ładowanie, zbyt długi czas wjazdu na przenosnik 
+db110.dbx21.1 Łańcuchowy 6. Rozładowanie, zbyt długi czas wyjazdu z przenosnika
+db110.dbx21.2 Łańcuchowy 6. Rozładowanie, sygnał z fotokomórki pojawił się drugi raz
+db110.dbx22.0 Łańcuchowy 7. Ładowanie, zbyt długi czas wjazdu na przenosnik 
+db110.dbx22.1 Łańcuchowy 7. Rozładowanie, zbyt długi czas wyjazdu z przenosnika
+db110.dbx22.2 Łańcuchowy 7. Rozładowanie, sygnał z fotokomórki pojawił się drugi raz
+db110.dbx23.0 Łańcuchowy 8. Ładowanie, zbyt długi czas wjazdu na przenosnik 
+db110.dbx23.1 Łańcuchowy 8. Rozładowanie, zbyt długi czas wyjazdu z przenosnika
+db110.dbx23.2 Łańcuchowy 8. Rozładowanie, sygnał z fotokomórki pojawił się drugi raz
+db110.dbx18.0 Brama roletowa, zabezpieczenia krańcowe
+db110.dbx18.1 Brama roletowa, zbyt długi czas otwierania lub zamykania w trybie automatycznym
+db110.dbx17.7 Wyłączniki krańcowe: 17S1, 17S2. Kolizja z paletą
+db110.dbx1.0 Owijarka alarm
+</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="title">
+        <string>BŁĄD</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_193">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>20</pointsize>
+           </font>
+          </property>
+          <property name="whatsThis">
+           <string>DB100.DBX0.6</string>
+          </property>
+          <property name="pixmap">
+           <pixmap>img/led_red_on.svg</pixmap>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="margin">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>24</pointsize>
+           </font>
+          </property>
+          <property name="whatsThis">
+           <string>DB100.DBX0.5 S</string>
+          </property>
+          <property name="text">
+           <string>RESET</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_4"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
