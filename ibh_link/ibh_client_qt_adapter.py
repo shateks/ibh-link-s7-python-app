@@ -427,7 +427,7 @@ class Worker(QObject):
         self._driver.timeout = 0
         self._stay_connected = False
         self._change_driver = False
-        self._connection_errors = (ConnectionError, ibh_client.SocketUnexpectedDisconnected)
+        self._connection_errors = (ConnectionError, ibh_client.SocketUnexpectedDisconnected, OSError)
         self._communication_errors = ibh_client.DriverError
 
     def _connection_error_handler(self, e):
