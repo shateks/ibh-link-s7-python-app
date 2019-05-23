@@ -43,7 +43,7 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX12.0 toggle</string>
+           <string>DB100.DBX15.0 toggle</string>
           </property>
           <property name="text">
            <string>GÓRA</string>
@@ -76,7 +76,7 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX12.1 toggle</string>
+           <string>DB100.DBX15.1 toggle</string>
           </property>
           <property name="text">
            <string>DÓŁ</string>
@@ -106,7 +106,7 @@
            <bool>true</bool>
           </property>
           <property name="whatsThis">
-           <string>db100.dbx14.2</string>
+           <string>db100.dbx17.2</string>
           </property>
           <property name="styleSheet">
            <string notr="true">border: None</string>
@@ -142,7 +142,7 @@
            <bool>true</bool>
           </property>
           <property name="whatsThis">
-           <string>db100.dbx14.3</string>
+           <string>db100.dbx17.3</string>
           </property>
           <property name="styleSheet">
            <string notr="true">border: None</string>
@@ -183,7 +183,7 @@
       <bool>false</bool>
      </property>
      <property name="title">
-      <string>SSAWKI</string>
+      <string>CHWYTAK</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -206,10 +206,10 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX12.4 toggle</string>
+           <string>DB100.DBX15.4 toggle</string>
           </property>
           <property name="text">
-           <string>GÓRA</string>
+           <string>ZAMKNIJ</string>
           </property>
           <property name="icon">
            <iconset>
@@ -239,10 +239,10 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX12.5 toggle</string>
+           <string>DB100.DBX15.5 toggle</string>
           </property>
           <property name="text">
-           <string>DÓŁ</string>
+           <string>OTWÓRZ</string>
           </property>
           <property name="icon">
            <iconset>
@@ -297,7 +297,7 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX12.2 toggle</string>
+           <string>DB100.DBX15.2 toggle</string>
           </property>
           <property name="text">
            <string>ZAŁĄCZ</string>
@@ -330,7 +330,7 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX12.3 toggle</string>
+           <string>DB100.DBX15.3 toggle</string>
           </property>
           <property name="text">
            <string>WYŁĄCZ</string>
@@ -388,7 +388,7 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX12.6 toggle</string>
+           <string>DB100.DBX15.6 toggle</string>
           </property>
           <property name="text">
            <string>ZAŁĄCZ</string>
@@ -421,7 +421,7 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX12.7 toggle</string>
+           <string>DB100.DBX15.7 toggle</string>
           </property>
           <property name="text">
            <string>WYŁĄCZ</string>
@@ -451,7 +451,7 @@
            <bool>true</bool>
           </property>
           <property name="whatsThis">
-           <string>db100.dbx14.4</string>
+           <string>db100.dbx17.4</string>
           </property>
           <property name="styleSheet">
            <string notr="true">border: None</string>
@@ -515,7 +515,7 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX13.0 toggle</string>
+           <string>DB100.DBX16.0 toggle</string>
           </property>
           <property name="text">
            <string>DO PRZODU</string>
@@ -548,7 +548,7 @@
            </sizepolicy>
           </property>
           <property name="whatsThis">
-           <string>DB100.DBX13.1 toggle</string>
+           <string>DB100.DBX16.1 toggle</string>
           </property>
           <property name="text">
            <string>DO TYŁU</string>
@@ -578,7 +578,7 @@
            <bool>true</bool>
           </property>
           <property name="whatsThis">
-           <string>db100.dbx14.0</string>
+           <string>db100.dbx17.1</string>
           </property>
           <property name="styleSheet">
            <string notr="true">border: None</string>
@@ -614,7 +614,7 @@
            <bool>true</bool>
           </property>
           <property name="whatsThis">
-           <string>db100.dbx14.1</string>
+           <string>db100.dbx17.0</string>
           </property>
           <property name="styleSheet">
            <string notr="true">border: None</string>
@@ -650,7 +650,7 @@
            <bool>true</bool>
           </property>
           <property name="whatsThis">
-           <string>db100.dbx14.5</string>
+           <string>db100.dbx17.5</string>
           </property>
           <property name="styleSheet">
            <string notr="true">border: None</string>
