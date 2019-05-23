@@ -60,7 +60,9 @@ Designed to be substitute of simple HMI.
 Main feature is that application at start up loads screens/widgets '.ui' files created in QtCreator, and adding them
 to tab widget. To add visualisation screen modify 'config.ini' \[SCREENS\] property.
 In screen/widget '.ui' file to add gui element read/write action with PLC variable, simply fill "whatsThis" property.
-Supported widgets are: QPushButton, QLabel, QSlider, QDial, QProgressBar, QLineEdit.
+Supported widgets for read and modifying variables are: QPushButton, QLabel, QSlider, QDial, QProgressBar, QLineEdit.
+For displaying alarms should be used QListView, just edit "What's this" property like in picture below.
+![](doc/QListViewAsAlarmWindow.png)
 
 ### What's this property
 
@@ -76,7 +78,7 @@ Entries are case insensitive, you can use german notation A==Q, E==I.
 Entering of READ is faulty, if you want read action just do not specify any action.
 Actions for multi-bytes types can only be WRITE, for BOOL type can be: SETS or S, RESET or R, TOGGLE or T.
 * range of variation - is the range of allowed entries by user it refers mainly to QLineEdit. If not specified, maximal
-and minimal "interpretation of bytes" type will be used.
+and minimal "interpretation of bytes" type will be used. Example: "range(-1.0,1.0)".
 
 ### DEBUG tab
 If in "config.ini" \[DBEUG\] console=True, then DEBUG tab will be shown. It is helpful in screen/widget debugging because
